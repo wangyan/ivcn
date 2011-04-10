@@ -1,0 +1,668 @@
+<?php
+$conf = ivPool::get('conf');
+$thumbWidth = ($this->folder->maxThumbWidth != 0) ? $this->folder->maxThumbWidth : $conf->get('/config/imagevue/thumbnails/thumbnail/boxwidth');
+$thumbHeight = ($this->folder->maxThumbHeight != 0) ? $this->folder->maxThumbHeight : $conf->get('/config/imagevue/thumbnails/thumbnail/boxheight');
+$thumbWidth = ($thumbWidth < 80) ? 80 : $thumbWidth;
+$thumbHeight = ($thumbHeight < 80) ? 80 : $thumbHeight;
+?>
+<div class="bodySidebar folderParams">
+	<div class="folderTitle">
+		<?php echo $this->folder->getTitle(); ?>
+	</div>
+	<form method="post" action="">
+		<?php if ($this->folder->Parent): ?>
+		<div class="folderUseAs">
+			设置为
+			<select name="newdata[page]" onchange="this.form.submit();">
+				<option value="gallery">文件夹</option>
+				<option value="html" <?php echo ($this->folder->isPage() ? 'selected="selected"' : ''); ?>>文本页&nbsp;</option>
+				<option value="link" <?php echo ($this->folder->isLink() ? 'selected="selected"' : ''); ?>>超链接</option>
+				<option value="filemod" <?php echo ($this->folder->isFilemod() ? 'selected="selected"' : ''); ?>>文件特效</option>
+			</select>
+		</div>
+		<?php endif ?>
+
+		<div class="folderTags">
+			<span title="文件夹创建于 <?php echo formatDate($this->folder->date); ?>"><?php echo formatDate($this->folder->date); ?></span>
+			<span title="文件数量统计"><?php echo $this->folder->fileCount; ?>
+				<?php if ($this->folder->fileCount != $this->folder->totalFileCount): ?>
+					/ <?php echo $this->folder->totalFileCount; ?>
+				<?php endif; ?>
+				个文件</span>
+		</div>
+	</form>
+
+	<div class="folderPreview" id="folderPreviewContainer">
+		<div class="thumb" title="拖动任何缩略图到这里改变览图像">
+
+		<?php if ($this->folder->previewimage && ($file = ivMapperFactory::getMapper('file')->find(ROOT_DIR . $this->folder->getPrimary() . $this->folder->previewimage))): ?>
+			<img src="../<?php echo $file->thumbnail ?>?<?php echo $file->getThumbnailMTime(); ?>" alt="" />
+		<?php else: ?>
+			<img class="default" src="../<?php echo $this->folder->thumbnail; ?>?<?php echo $this->folder->getThumbnailMTime(); ?>" alt="" />
+		<?php endif;?>
+	</div>
+</div><!-- folderPreview -->
+
+<!-- <?php if ($this->folder->description):?>
+<div class="folderDescription">
+<?php echo htmlspecialchars($this->folder->description); ?>
+</div>
+<?php endif;?>
+<div class="controls left">
+<a href="#" class="buttonEdit" title="Edit this folder">Edit folder</a>
+</div> controls -->
+<?php if (!$this->folder->isLink()): ?>
+
+	<form method="post" action="">
+
+
+		<?php if ($this->folder->isFilemod()): ?>
+
+			<div class="row special">
+				<label>文件特效 <a title="关于 Imagevue 文件特效" class="iv-help" target="_blank" href="http://imagevuex.com/documentation/filemod/"></a>
+				</label>
+				<select name="newdata[fileMod]">
+					<option value="slideshow" <?php echo ('slideshow' == $this->folder->fileMod ? 'selected="selected"' : ''); ?>>幻灯片&nbsp;&nbsp;</option>
+					<option value="photoblinds" <?php echo ('photoblinds' == $this->folder->fileMod ? 'selected="selected"' : ''); ?>>百叶窗&nbsp;&nbsp;</option>
+					<option value="randomimage" <?php echo ('randomimage' == $this->folder->fileMod ? 'selected="selected"' : ''); ?>>随机图片&nbsp;&nbsp;</option>
+					<option value="custom" <?php echo ('custom' == $this->folder->fileMod ? 'selected="selected"' : ''); ?>>自定义&nbsp;&nbsp;</option>
+					<?php foreach (getContent(BASE_DIR . 'filemods/') as $file): ?>
+						<?php if (ivFilepath::matchSuffix($file, $conf->get('/config/imagevue/settings/allowedext'))): ?>
+							<option value="<?php echo $file; ?>" <?php echo ($file == $this->folder->fileMod ? 'selected="selected"' : ''); ?>><?php echo $file; ?></option>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</select>
+			</div>
+
+
+		<?php endif; ?>
+
+		<?php if (!$this->folder->isPage()): ?>
+
+
+
+			<div class="row">
+				<label>标题</label>
+				<input type="text" class="text" name="newdata[title]" value="<?php echo htmlspecialchars($this->folder->title); ?>"/>
+			</div>
+
+			<div class="row">
+				<label>描述</label>
+				<div class="textarea">
+					<textarea cols="20" rows="5" name="newdata[description]"><?php echo htmlspecialchars($this->folder->description); ?></textarea>
+				</div>
+			</div>
+
+		<?php endif ?>
+
+		<?php foreach ($this->folder->getUserAttributeNames() as $name): ?>
+			<div class="row">
+				<label><?php echo ucfirst($name); ?></label>
+				<input type="text" class="text" name="newdata[<?php echo $name; ?>]" value="<?php echo htmlspecialchars($this->folder->$name); ?>"/>
+			</div>
+		<?php endforeach; ?>
+
+		<div class="row<?php echo ($this->folder->hasPassword() ? ' special' : '') ?>">
+			<?php $firstPasswordParent = $this->folder->findFirstPasswordParent(); ?>
+			<?php if (($firstPasswordParent && ($firstPasswordParent->getPrimary() == $this->folder->getPrimary())) || !$firstPasswordParent): ?>
+				<?php if ($this->folder->hasPassword()): ?>
+
+					<a class="unlockFolder" href="?c=index&amp;a=removePassword&amp;path=<?php echo urlencode($this->folder->getPrimary()); ?>">&times; 删除</a>
+				<?php endif; ?>
+				<label>
+					<?php echo ($this->folder->hasPassword() ? '更改' : '设置') ?>文件夹密码
+					<a class="iv-help" target="_blank" title="关于文件夹密码" href="http://imagevuex.com/documentation/folder-passwords/"></a>
+				</label>
+				<input type="password" class="text" name="folderPwd" value="<?php echo ($this->folder->hasPassword() ? '******' : '') ?>" autocomplete="off" />
+			<?php else: ?>
+				点击　<a href="?path=<?php echo urlencode($firstPasswordParent->getPrimary()) ?>">这里</a>　更改密码
+			<?php endif; ?>
+		</div>
+
+		<div class="row">
+			<label class="inline" id="folderParameters" <?php echo ($this->folder->parameters) ? 'class="collapse"' : '' ?> onclick="$('#folderP').toggle(); $('#folderParameters').toggleClass('collapse');">参数
+				</label>
+				<a class="iv-help" target="_blank" title="关于文件夹参数" href="http://imagevuex.com/documentation/folder-parameters/"></a>
+			<div class="textarea" id="folderP" <?php echo ($this->folder->parameters)?'':'style="display: none"' ?>>
+				<textarea cols="20" rows="5" name="newdata[parameters]"><?php echo htmlspecialchars($this->folder->parameters); ?></textarea>
+			</div>
+		</div>
+
+
+		<div class="controls left">
+			<input type="submit" class="button buttonSave" value="保存"/>
+		</div>
+	</form>
+<?php endif ?>
+</div><!-- bodySidebar -->
+
+
+<div class="bodyContent folderThumbs">
+
+	<div class="contentBar">
+			<div class="controls right">
+				<?php if ((count($this->folder->Files)) && !$this->folder->isLink() ): ?>
+					<form method="post" action="" id="sfaForm">
+						<select name="selected[]" multiple="multiple" id="selected_files" style="display: none;">
+							<?php foreach ($this->folder->Files as $item): ?>
+								<option value="<?php echo $item->name; ?>"><?php echo $item->name; ?></option>
+							<?php endforeach; ?>
+						</select>
+						<input type="hidden" name="move" value="0" />
+						<span title="移动已标记的文件">移动文件至：</span>
+						<span>
+							<select onchange="if ($('#groupCopyCheckbox').attr('checked')) {$(this.form).attr('action', '<?php echo $this->url(array('a' => 'copyFiles', 'path' => $this->folder->getPrimary())) ?>&amp;target=' + this.value)} else {$(this.form).attr('action', '<?php echo $this->url(array('a' => 'moveFiles', 'path' => $this->folder->getPrimary())) ?>&amp;target=' + this.value)} $(this.form).submit();">
+								<?php foreach ($this->folderTreeIterator as $folder):?>
+									<option value="<?php echo htmlspecialchars($folder->getPrimary()); ?>" <?php echo (ivFilepath::directory($this->path) == $folder->getPrimary() ? 'selected="selected"' : ''); ?>><?php echo str_repeat('--', $this->folderTreeIterator->getDepth()); ?> <?php echo smartStripTagsSubstr($folder->getTitle()); ?>&nbsp;&nbsp;</option>
+								<?php endforeach; ?>
+							</select>
+						</span>
+						<label title="复制选定的文件，而并非移动"><input type="checkbox" class="checkbox" name="copy" value="1" id="groupCopyCheckbox" /> 复制</label>
+					</form><a title="删除选定的文件" class="buttonDelete" href="#" onclick="if (confirm('您确认要删除选定的文件？')) {$('#sfaForm').attr('action', '<?php echo $this->url(array('a' => 'deleteFiles', 'path' => $this->folder->getPrimary())) ?>'); $('#sfaForm').submit();} return false;">删除</a>
+				<?php endif; ?>
+			</div>
+			<div class="controls left">
+				<form method="post" action="">
+					<?php if ($this->folder->Parent): ?>
+						<a title="返回上级目录" href="<?php echo $this->url(array('path' => $this->folder->Parent->getPrimary())) ?>">&laquo; 返回</a>
+					<?php endif; ?>
+					<div class="viewas <?php echo $this->folder->viewAs ?>">
+						<?php foreach ($this->views as $view): ?>
+							<a title="查看方式 <?php echo ucfirst($view); ?>" class="as<?php echo ucfirst($view); ?>" href="#" onclick="$.imagevueRequest('<?php echo $_SERVER['REQUEST_URI'] ?>', {parameters: {'newdata[viewAs]': '<?php echo $view; ?>'}}); return false;"></a>
+						<?php endforeach; ?>
+					</div>
+
+
+				<?php if ((count($this->folder->Files)) && !$this->folder->isLink() && !$this->folder->isPage()): ?>
+					<span class="pale" title="文件排序选项">排序：</span>
+					<select name="newdata[sort]" onchange="this.form.submit();" id="sortSelect">
+						<?php foreach ($this->sorts as $value => $data): ?>
+							<option value="<?php echo $value; ?>"<?php echo ($this->folder->sort == $value ? ' selected="selected"' : ''); ?>><?php echo $data['name'] ?>&nbsp;&nbsp;</option>
+						<?php endforeach; ?>
+					</select>
+				<?php endif ?>
+				</form>
+			</div>
+		</div><!-- contentBar -->
+
+
+
+		<?php if (count($this->folder->Folders) || $this->folder->Parent): ?>
+			<div class="folders <?php echo $this->folder->viewAs ?>">
+				<div class="foldersHolder" id="foldersSortableContainer">
+
+
+				<?php if ($this->folder->Parent): ?>
+					<ins class="folder">
+						<div class="folderHolder">
+							<a title="返回上级目录" class="folderImage" href="<?php echo $this->url(array('path' => $this->folder->Parent->getPrimary())) ?>" >
+								<img src="<?php echo IV_PATH; ?>images/folder_parent.png" alt=".." />
+							</a>
+						</div>
+					</ins>
+				<?php endif; ?>
+
+
+				<?php foreach ($this->folder->Folders as $item): ?>
+					<ins class="folder subFolder" id="item_<?php echo encodeFilenameBase64($item->name); ?>">
+						<div class="folderHolder">
+							<div class="controls left">
+								<a href="<?php echo $this->url(array('a' => ($item->isHidden() ? 'unhide' : 'hide'), 'path' => $item->getPrimary())) ?>" class="button<?php echo ($item->isHidden() ? 'Unh' : 'H') ?>ide" title="<?php echo ($item->isHidden() ? '显示' : '隐藏') ?>这个文件夹"></a>
+								<a class="buttonDelete" href="<?php echo $this->url(array('a' => '删除', '路径' => $item->getPrimary())) ?>" title="删除文件夹" onclick="return confirm('您确实要删除文件夹 <?php echo $item->name; ?>?');"></a>
+							</div>
+							<a title="<?php echo htmlspecialchars(strip_tags($item->description)); ?>" class="folderImage" href="?path=<?php echo urlencode($item->getPrimary());?>"><img src="../<?php echo $item->thumbnail; ?>?<?php echo $item->getThumbnailMTime(); ?>" alt="" /></a>
+
+
+							<?php if (ivFolder::VIEW_AS_GRID == $this->folder->viewAs): ?>
+								<a title="<?php echo htmlspecialchars(strip_tags($item->description)); ?>" class="folderTitle" href="?path=<?php echo urlencode($item->getPrimary()); ?>"><?php echo strip_tags($item->getTitle()); ?></a>
+							<?php else:?>
+								<div class="thumbInfo <?php echo ($item->isHidden() ? ' hidden' : '') ?>">
+									<div class="infoTitle">
+										<a href="?path=<?php echo urlencode($item->getPrimary()); ?>"><?php echo strip_tags($item->getTitle()); ?></a>
+									</div>
+									<div class="infoFilename">
+										<a href="?path=<?php echo urlencode($item->getPrimary()); ?>"><?php echo $item->getPrimary(); ?></a>
+									</div>
+									<div class="infoDescription">
+										<div><?php echo $item->description; ?></div>
+									</div>
+									<div class="folderTags">
+										<span title="文件夹创建于：<?php echo formatDate($item->date); ?>"><?php echo formatDate($item->date); ?></span>
+										<span title="文件数量统计"><?php echo ($item->fileCount == $item->totalFileCount ? $item->fileCount : $item->fileCount . '/' . $item->totalFileCount ) ?> 个文件</span>
+									</div>
+								</div><!-- list thumbInfo -->
+
+							<?php endif; ?>
+						</div><!-- folderHolder -->
+					</ins>
+				<?php endforeach; ?>
+				</div><!-- foldersHolder -->
+			</div><!-- folders -->
+		<?php endif; ?>
+
+		<?php if ($this->folder->isPage()): ?>
+			<!-- pageData -->
+
+			<?php if (!in_array('noteTextpage', ivPool::get('notes'))): ?>
+				<div class="note">
+					<a id="noteTextpage" class="close" href="#">&times;</a>
+					此文件夹将显示为文本页面。 <a title="关于文本页面" class="iv-ext" target="_blank" href="http://imagevuex.com/documentation/textpages/">关于文本页面</a>
+				</div>
+			<?php endif; ?>
+			<form method="post" class="textPage" action="">
+
+				<div class="row text">
+					标题<br/>
+					<input class="text "type="text" name="newdata[title]" value="<?php echo htmlspecialchars($this->folder->title) ?>"/>
+				</div>
+
+				<div class="row">
+					描述<br/>
+					<div class="textarea">
+						<textarea class="description" cols="20" rows="5" name="newdata[description]"><?php echo $this->folder->description ?></textarea>
+					</div>
+				</div>
+
+				<div class="row">
+					内容<br/>
+					<textarea id="pageContent" class="pageContent" cols="20" rows="30" name="newdata[pageContent]"><?php echo htmlspecialchars($this->folder->pageContent); ?></textarea>
+				</div>
+				<div class="controls">
+					<input type="submit" class="button buttonSave" value="保存" name="save" />
+				</div>
+			</form>
+			<!-- /pageData -->
+		<?php elseif ($this->folder->isLink()): ?>
+			<?php if (!in_array('noteLink', ivPool::get('notes'))): ?>
+				<div class="note">
+					<a id="noteLink" class="close" href="#">&times;</a>
+					这文件夹将作为一个超链接。如果需要在新窗口中打开链接, 请添加 <b>*_blank</b>。
+				</div>
+			<?php endif; ?>
+			<!-- linkData -->
+			<form method="post" action="" class="textPage">
+				<div class="row text">
+					标题：<br/>
+					<input type="text" class="text" name="newdata[title]" value="<?php echo htmlspecialchars($this->folder->title) ?>"/>
+				</div>
+
+				<div class="row">
+					描述：<br/>
+					<div class="textarea">
+						<textarea class="description" cols="20" rows="5" name="newdata[description]"><?php echo htmlspecialchars($this->folder->description) ?></textarea>
+					</div>
+				</div>
+
+				<?php
+					if ($this->folder->pageContent) {
+
+						$pageContent=htmlspecialchars($this->folder->pageContent);
+						$newWindow = strpos( $pageContent, '*' );
+
+						if ($newWindow === false) {}
+						else {
+							$pageContent = substr($pageContent,0,$newWindow);
+							$newWindow = true;
+						}
+					} else {
+						$pageContent = 'http://';
+					}
+
+				?>
+
+				<div class="row text">
+					超链接:<br/>
+					<input type="text" class="text" name="newdata[pageContent]" value="<?php echo $pageContent; ?>"/>
+				</div>
+
+
+				<div class="row text">
+					<label><input type="checkbox" class="checkbox" name="newdata[newWindow]" value="1" <?php echo isset($newWindow)?'checked="checked"':''; ?>/> 在新窗口中打开链接：</label>
+				</div>
+
+				<div class="row">
+					<input type="submit" class="button buttonSave" value="保存" name="save"/>
+				</div>
+			</form>
+			<!-- /linkData -->
+		<?php endif; ?>
+
+		<?php if (!$this->folder->isLink()): ?>
+
+			<?php if ($this->folder->isFilemod()) : ?>
+				<?php if (!in_array('noteFilemod', ivPool::get('notes'))): ?>
+					<div class="note">
+						<a id="noteFilemod" class="close" href="#">&times;</a>
+						文件模块使您可以在您的 Imagevue 中创建自定义页面。
+						<a title="关于 Imagevue 文件特效" class="iv-ext" target="_blank" href="http://imagevuex.com/documentation/filemod/">关于 Imagevue 文件特效</a>
+					</div>
+				<?php endif ?>
+			<?php else: ?>
+				<?php if (!in_array('noteManage', ivPool::get('notes')) && !$this->folder->isPage()): ?>
+					<div class="note">
+						<a id="noteManage" class="close" href="#">&times;</a>
+						可拖动图像或文件夹进行排序。 按 <strong>Ctrl+A</strong> 选中文件夹内所有图片。<a class="iv-ext" title="关于 Imagevue 文件管理" href="http://imagevuex.com/documentation/manage-page/" target="_blank">Imagevue 文件管理</a>
+					</div>
+				<?php endif ?>
+			<?php endif ?>
+			<!-- imageList -->
+			<div class="thumbs <?php echo $this->folder->viewAs ?>" id="thumbsSortableContainer">
+				<?php foreach ($this->folder->Files as $num => $item): ?>
+					<div id="item_<?php echo encodeFilenameBase64($item->name); ?>" <?php echo (ivFolder::VIEW_AS_GRID == $this->folder->viewAs ? 'style="width: ' . ($thumbWidth + 12) . 'px; height: ' . ($thumbHeight + 12) . 'px; "' : ''); ?> class="thumb <?php echo ($item->isVisibleOnFrontEnd() ? '' : 'excluded') ?> <?php echo (!$item->title && !$conf->get('/config/imagevue/settings/autoTitling') ? '未命名文件夹' : '') ?>">
+						<div class="thumbImage" style="width: <?php echo $thumbWidth+12 ?>px; height:<?php echo $thumbHeight + 12; ?>px">
+							<div class="controls left">
+								<a href="#" class="buttonCheckbox" title="标记" onclick="$.imagevueToggleFile('<?php echo $item->name; ?>'); $(this.parentNode.parentNode).toggleClass('selected'); return false; "></a>
+								<a href="?c=index&amp;a=setPreview&amp;path=<?php echo urlencode($this->folder->getPrimary()); ?>&amp;id=<?php echo encodeFilenameBase64($item->name); ?>" title="设置为预览图片" class="buttonPreview"></a>
+								<?php if (is_a($item, 'ivFileImage')): ?>
+									<a href="#" title="编辑缩略图" class="buttonThumb" id="thumbareaButton<?php echo $num ?>" onclick="return false;"></a>
+									<script type="text/javascript">
+									// <![CDATA[
+										(function ($) {
+											$(document).ready(function() {
+											    $("#thumbareaButton<?php echo $num ?>").colorbox({
+													title: ' ',
+													width:'800px',
+													height:'600px',
+													href: '?c=file&a=thumbarea&path=<?php echo urlencode($item->getPrimary()); ?>',
+													iframe: true
+												});
+											});
+										})(jQuery);
+									// ]]>
+									</script>
+								<?php endif; ?>
+								<a href="?c=file&amp;a=delete&amp;path=<?php echo urlencode($item->getPrimary()); ?>" onclick="return confirm('你确认要删除文件 <?php echo $item->name; ?>？');" title="删除" class="buttonDelete"></a>
+							</div>
+
+							<a title="<?php echo htmlspecialchars(strip_tags($item->getTitle())); ?>" href="<?php echo $this->url(array('c' => 'file', 'path' => $item->getPrimary())); ?>">
+								<?php if (ivPath::canonizeRelative(substr($item->thumbnail, 0, strlen($this->contentPath))) !== $this->contentPath): ?>
+									<img src="<?php echo $this->url(array('c' => 'file', 'a' => 'getthumb', 'path' => $item->getPrimary())) ?>" alt="" />
+								<?php else: ?>
+									<img src="../<?php echo $item->thumbnail; ?>?<?php echo $item->getThumbnailMTime(); ?>" alt="" />
+								<?php endif; ?>
+							</a>
+						</div>
+
+						<?php if (ivFolder::VIEW_AS_LIST == $this->folder->viewAs): ?>
+							<div class="thumbInfo">
+								<div class="infoTitle">
+									<a href="?c=file&amp;path=<?php echo urlencode($item->getPrimary()); ?>"><?php echo strip_tags($item->getTitle()); ?></a>
+								</div>
+								<div class="infoFilename"><a href="?c=file&amp;path=<?php echo urlencode($item->getPrimary()); ?>"><?php echo $item->name; ?></a></div>
+								<div class="infoDescription">
+									<div><?php echo $item->description; ?></div>
+								</div>
+								<div class="thumbTags">
+									<span title="文件创建于: <?php echo formatDate($item->date); ?>"><?php echo formatDate($item->date); ?></span>
+									<?php if ($item->width && $item->height): ?>
+										<span title="Picture dimensions: <?php echo $item->width; ?>x<?php echo $item->height; ?> px"><?php echo $item->width; ?>x<?php echo $item->height; ?></span>
+									<?php endif; ?>
+									<span title="文件大小: <?php echo formatFilesize($item->size); ?>"><?php echo formatFilesize($item->size); ?></span>
+								</div>
+							</div>
+						<?php endif ?>
+
+					</div>
+				<?php endforeach; ?>
+			</div><!-- thumbs -->
+
+			<script type="text/javascript">
+			// <![CDATA[
+				(function ($) {
+					$(document).ready(function () {
+						$('#folderPreviewContainer').droppable({
+							accept: 'div.thumb',
+							over: function(ev, ui) {
+								$('#folderPreviewContainer').addClass('hover');
+							},
+							out: function(ev, ui) {
+                                $('#folderPreviewContainer').removeClass('hover');
+                            },
+							drop: function(ev, ui) {
+                                $('#folderPreviewContainer').removeClass('hover');
+                                var src = $(ui.draggable).find('img').attr('src');
+                                var id = $(ui.draggable).attr('id').substring(5);
+								$('#thumbsSortableContainer').sortable('cancel');
+								$('#folderPreviewContainer').find('img').attr('src', src);
+								$.ajax({
+									url: '?c=index&a=setPreview&path=<?php echo urlencode($this->folder->getPrimary()); ?>&id=' + id,
+									type: 'GET',
+									complete: function(xhr, status) {
+										if ('success' == status) {
+											$.imagevueMessenger(xhr.responseText, 'message');
+										}
+									}
+								});
+							}
+						});
+
+						$('#thumbsSortableContainer').sortable({
+							tolerance: 'pointer',
+							over: function(ev, ui) {
+								$(ui.placeholder).css({visibility: 'visible'});
+							},
+							start: function(ev, ui) {
+								$(ui.placeholder).css({visibility: 'visible'});
+							},
+							update: function(ev, ui) {
+								$.ajax({
+									url: '?c=index&a=sortFiles&path=<?php echo $this->folder->getPrimary() ?>',
+									type: 'POST',
+									data: $('#thumbsSortableContainer').sortable('serialize', {
+										expression: /^item_(.*)$/,
+										key: 'sort[]'
+									}),
+									complete: function(xhr, status) {
+										if ('success' == status) {
+											$('#sortSelect').val('<?php echo ivFolder::SORT_ORDER_MANUAL ?>');
+											$.imagevueMessenger('Folder data succesfully saved', 'message');
+										}
+									}
+								});
+							}
+						});
+
+						$('#foldersSortableContainer').sortable({
+							items: 'ins.subFolder',
+							tolerance: 'pointer',
+							revert: true,
+							over: function(ev, ui) {
+								$(ui.placeholder).css({visibility: 'visible'});
+							},
+							start: function(ev, ui) {
+								$(ui.placeholder).css({visibility: 'visible'});
+							},
+							update: function(ev, ui) {
+								$.ajax({
+									url: '?c=index&a=sortFolders&path=<?php echo $this->folder->getPrimary() ?>',
+									type: 'POST',
+									data: $('#foldersSortableContainer').sortable('serialize', {
+										expression: /^item_(.*)$/,
+										key: 'sort[]'
+									}),
+									complete: function(xhr, status) {
+										if ('success' == status) {
+											$('#sortSelect').val('<?php echo ivFolder::SORT_ORDER_MANUAL ?>');
+											$.imagevueMessenger('文件夹数据保存成功', 'message');
+										}
+									}
+								});
+							}
+						});
+					});
+				})(jQuery);
+			// ]]>
+			</script>
+
+		<?php endif; ?>
+	</div>
+<?php ob_start(); ?>
+	<a href="#" class="buttonNew" title="新建文件夹" onclick="var dirName = window.prompt('输入新的文件夹的名称'); if (dirName) {location.href = '?a=create&amp;path=<?php echo urlencode($this->path) ?>&amp;name=' + dirName;} return false;">新建</a>
+
+	<?php if ($this->folder->Parent): ?>
+		<a title="删除文件夹" href="index.php?path=<?php echo urlencode($this->path); ?>&amp;a=delete" class="buttonDelete" onclick="return confirm('你确认要删除这个文件夹 <?php echo ($this->folder->name); ?>？');">删除</a>
+		<a title="重命名文件夹" href="#" onclick="var dirName = window.prompt('Insert new name of folder', '<?php echo $this->folder->name ?>'); if (dirName) {location.href = '?a=rename&amp;path=<?php echo urlencode($this->path) ?>&amp;name=' + dirName;} return false;" class="buttonCopy">重命名</a>
+		<a href="index.php?path=<?php echo urlencode($this->path); ?>&amp;a=<?php echo ($this->folder->isHidden() ? 'unhide' : 'hide') ?>" class="button<?php echo ($this->folder->isHidden() ? 'Unh' : 'H') ?>ide" title="<?php echo ($this->folder->isHidden() ? '显示' : '隐藏') ?>文件夹"><?php echo ($this->folder->isHidden() ? '显示' : '隐藏') ?></a>
+
+	<?php endif; ?>
+
+	<?php if (!$this->folder->isLink()): ?><a href="#" class="buttonUpload" id="buttonUpload" title="上传文件至当前文件夹" onclick="return false;">上传</a>
+
+	<a href="#" class="buttonThumbs" id="buttonThumbs" title="创建缩略图">缩略图</a><?php endif ?>
+<?php $this->placeholder->set('controls', ob_get_clean()); ?>
+
+</div>
+<div style="display: none">
+
+<?php if (!$this->folder->isLink()): ?>
+
+<div class="layerBody" id="layerUpload">
+
+	<div class="layerHeader">
+		上传
+	</div>
+
+	<fieldset>
+		<label>上传路径：</label>
+		<div>
+			<strong><?php echo $this->folder->getPrimary() ?></strong>
+		</div>
+		<!--
+		TODO: Upload Path
+		<div class="row">
+		<select>
+			<option selected="selected">Places I've been to/Everest </option>
+			<option>Places I've been to/Everest/Views </option>
+			<option>Places I've been to/Everest/Climbing </option>
+			<option>Places I've been to/Everest/Death toll </option>
+
+		</select>
+		</div>
+		-->
+
+		<!--
+		TODO: Overwrite exisiting files
+		<div class="row">
+			<label class="inline"><input type="checkbox" class="checkbox" checked="checked"/> Overwrite existing files</label>
+		</div>
+		-->
+	</fieldset>
+
+	<?php if ('html' != $this->uploaderType): ?>
+		<fieldset>
+			<div class="row">
+				<a class="iv-ext" target="_blank" title="关于调整图像大小" href="http://imagevuex.com/documentation/uploader-image-resizer/">调整图像大小</a>
+			</div>
+			<div class="row last">
+				<input id="swfUploadResizeCheckbox" type="checkbox" <?php echo ($conf->get('/config/imagevue/settings/uploader/resizeDefault') ? 'checked="checked"' : '') ?> />
+				<label for="swfUploadResizeCheckbox" class="inline">调整上传图像大小 宽度：</label>
+				<input id="swfUploadResizeWidth" type="text" class="text thumbSize" value="<?php echo htmlspecialchars($conf->get('/config/imagevue/settings/uploader/width')) ?>" />
+				<label class="inline">&nbsp;高度：</label>
+				<input id="swfUploadResizeHeight" type="text" class="text thumbSize" value="<?php echo htmlspecialchars($conf->get('/config/imagevue/settings/uploader/height')) ?>" />
+
+			</div>
+		</fieldset>
+
+		<div class="row controls">
+			<div class="control">
+				<div id="uploaderContainer" style="height: 50px; width: 100px;">&nbsp;</div>
+			</div>
+		</div>
+	<?php else: ?>
+		<fieldset id="htmlUploaderContainer">
+			<form id="htmlUploader" action="index.php?a=upload&amp;path=<?php echo $this->path; ?>" method="post" enctype="multipart/form-data" target="myIframe">
+				<input type="file" name="Filedata" />
+			</form>
+		</fieldset>
+
+		<div class="row controls">
+			<input id="htmlUploaderSubmitButton" type="submit" class="buttonUpload" value="上传" />
+		</div>
+	<?php endif; ?>
+
+	<fieldset>
+		<div class="uploadProgress" id="fsUploadProgress"></div>
+	</fieldset>
+
+	<iframe id="myIframe" name="myIframe" style="display: none;"></iframe>
+</div>
+
+<div class="layerBody" id="layerThumbs">
+
+	<div class="layerHeader">
+		创建缩略图
+	</div>
+	<?php if (!in_array('noteThumbs', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteThumbs" href="#" class="close">&times;</a>
+			<a class="iv-ext" title="如何创建缩略图" target="_blank" href="http://imagevuex.com/documentation/create-thumbnails/">如何创建缩略图</a>
+		</div>
+	<?php endif; ?>
+	<form action="?c=publish" method="post">
+		<fieldset>
+
+			<div class="row last">
+				起始文件夹
+				<select name="publishData[path]">
+					<?php foreach ($this->folderTreeIterator as $folder):?>
+						<option value="<?php echo htmlspecialchars($folder->getPrimary()); ?>" <?php echo (ivFilepath::directory($this->path) == $folder->getPrimary() ? 'selected="selected"' : ''); ?>><?php echo str_repeat('--', $this->folderTreeIterator->getDepth()); ?> <?php echo smartStripTagsSubstr($folder->getTitle()); ?>&nbsp;&nbsp;</option>
+					<?php endforeach; ?>
+				</select>
+
+			</div>
+
+		</fieldset>
+
+		<fieldset>
+			<div class="row">
+				<label class="inline">
+					宽度：
+					<input type="text" class="text thumbSize" name="publishData[width]" value="<?php echo ($conf->get('/config/imagevue/thumbnails/thumbnail/boxwidth')); ?>" />
+				</label>
+				&nbsp;&nbsp;&nbsp;
+				<label class="inline">
+					高度：
+					<input type="text" class="text thumbSize" name="publishData[height]" value="<?php echo ($conf->get('/config/imagevue/thumbnails/thumbnail/boxheight')); ?>" />
+				</label>
+				<a class="iv-help" title="如何创建缩略图" target="_blank" href="http://imagevuex.com/documentation/create-thumbnails/"></a>
+			</div>
+			<div class="row last">
+				<label class="inline">
+					<input type="radio" class="radio" name="publishData[resizetype]" value="<?php echo (ivImage::IMAGE_RESIZETYPE_CROPTOBOX); ?>" <?php echo (ivImage::IMAGE_RESIZETYPE_CROPTOBOX == $conf->get('/config/imagevue/thumbnails/thumbnail/resizetype') ? 'checked="checked"' : ''); ?> /> 裁剪模式
+				</label>
+				&nbsp;&nbsp;&nbsp;
+				<label class="inline">
+					<input type="radio" class="radio" name="publishData[resizetype]" value="<?php echo (ivImage::IMAGE_RESIZETYPE_RESIZETOBOX); ?>" <?php echo (ivImage::IMAGE_RESIZETYPE_RESIZETOBOX == $conf->get('/config/imagevue/thumbnails/thumbnail/resizetype') ? 'checked="checked"' : ''); ?> /> 缩放模式
+				</label>
+			</div>
+		</fieldset>
+
+
+		<fieldset>
+			<div class="row">
+				<label class="inline">
+					<input name="publishData[thumbnails]" value="create" type="radio" class="radio" checked="checked"/>
+					创建缺失的缩略图
+				</label>
+			</div>
+			<div class="row last">
+				<label class="inline">
+					<input name="publishData[thumbnails]" value="recreate" type="radio" class="radio" />
+					重建所有缩略图
+				</label>
+			</div>
+		</fieldset>
+
+		<div class="row controls">
+			<input type="submit" class="buttonSave" value="创建" />
+		</div>
+
+
+	</form>
+</div>
+
+<!-- layer layerCreateThumbnails-->
+
+
+
+<?php endif; ?>

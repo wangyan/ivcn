@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<?php
+	$conf = ivPool::get('conf');
+	$siteTitle = $conf->get('/config/imagevue/settings/sitetitle');
+	$currentTitle = $this->placeholder->get('currentTitle');
+	$swfAPath = $this->placeholder->get('currentPath');
+	if (substr($swfAPath,-1) != '/') {
+		$swfAPath .= '/';
+	}
+	$keywords = $conf->get('/config/imagevue/seo/keywords');
+	$description = $conf->get('/config/imagevue/seo/description');
+	$counters = $conf->get('/config/imagevue/seo/counters');
+
+	$isIPhone = (false !== strpos($_SERVER['HTTP_USER_AGENT'], 'iPad') || false !== strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') || false !== strpos($_SERVER['HTTP_USER_AGENT'], 'iPod'));
+?>
+		<meta content="minimum-scale=1.0, width=device-width, maximum-scale=0.6667, user-scalable=yes" name="viewport" />
+		<link href="<?php echo IV_PATH; ?>images/imagevueTouch.png" rel="apple-touch-icon" />
+
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="keywords" content="<?php echo $keywords; ?>" />
+		<meta name="description" content="<?php echo $description; ?>" />
+		<title><?php echo ($currentTitle)?$currentTitle . ' &lsaquo; ':'' ?><?php echo $siteTitle; ?></title>
+		<link href="<?php echo IV_PATH; ?>assets/dtree/css/dtree.css" rel="stylesheet" type="text/css" />
+		<link href="<?php echo IV_PATH; ?>assets/css/imagevue.html.css" rel="stylesheet" type="text/css" />
+		<link media="only screen and (max-device-width: 480px)" href="<?php echo IV_PATH; ?>assets/css/imagevue.iphone.css" type="text/css" rel="stylesheet" />
+
+		<?php if (!empty($_COOKIE['stylesheet'])): ?>
+			<link href="<?php echo IV_PATH; ?>css/<?php echo $_COOKIE['stylesheet']; ?>" rel="stylesheet" type="text/css" />
+		<?php endif; ?>
+		<link href="<?php echo IV_PATH; ?>assets/css/imagevue.adminbar.css" rel="stylesheet" type="text/css" />
+		<script type="text/javascript" src="<?php echo IV_PATH; ?>assets/dtree/js/dtree.js"></script>
+		<script type="text/javascript" src="<?php echo IV_PATH; ?>assets/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<?php echo IV_PATH; ?>assets/colorbox/jquery.colorbox-min.js"></script>
+		<?php if ($isIPhone): ?>
+			<script type="text/javascript">
+			// <![CDATA[
+				function initScreen() {
+					setTimeout("window.scrollTo(0,1);", 100);
+				}
+				$(document).ready(initScreen);
+			// ]]>
+			</script>
+		<?php endif; ?>
+		<link rel="stylesheet" href="<?php echo IV_PATH; ?>assets/colorbox/colorbox.css" type="text/css" media="screen" />
+	</head>
+	<?php if ($isIPhone): ?>
+		<body onorientationchange="initScreen()">
+	<?php else: ?>
+		<body>
+	<?php endif; ?>
+		<?php if (ivAcl::isAdmin()): ?>
+			<!-- #forAdmin -->
+			<div id="forAdmin">
+				<div class="right"><?php echo htmlspecialchars(ivAuth::getCurrentUserLogin()) ?>
+					<a href="#" title="隐藏管理工具栏" onclick="document.getElementById('forAdmin').style.display = 'none';return false;">&times; 隐藏</a>
+				</div>
+				<a href="<?php echo $conf->get('/config/imagevue/settings/adminfolder') ?>?path=<?php echo urlencode($this->placeholder->get('currentPath')); ?>" title="相册管理/文件管理">编辑此页面 &raquo;</a>
+				<a href="?p=gallery#/<?php echo $swfAPath; ?>" title="浏览FLASH版相册">FLASH 版本 &raquo;</a>
+				<?php $thumbRecreationPath = $this->placeholder->get('thumbRecreationPath'); ?>
+				<?php if ($thumbRecreationPath): ?>
+					<a href="<?php echo $conf->get('/config/imagevue/settings/adminfolder') ?>?a=publish&amp;path=<?php echo $thumbRecreationPath; ?>" title="重建该目录缩略图">重建缩略图 &raquo;</a>
+				<?php endif; ?>
+				<a href="<?php echo $conf->get('/config/imagevue/settings/adminfolder') ?>?c=config" title="更改 <?php echo $siteTitle; ?> 设置">设置 &raquo;</a>
+			</div>
+			<!-- /forAdmin -->
+		<?php endif; ?>
+	<div id="wrap">
+		
+		<!-- #header -->
+		<div id="header"><a href="?"><?php echo $siteTitle; ?></a></div>
+		<!-- /header -->
+
+		<!-- #subheader -->
+		<div id="subheader">
+
+			<div id="flashlink">
+				<a href="?p=gallery#/<?php echo $swfAPath; ?>" title="此页面的 Flash 版本" target="_blank" >Flash 版本 &raquo;</a>
+			</div>
+
+			<div id="menu">
+				<div>
+					<img src="<?php echo IV_PATH; ?>images/plus_icon.png" alt="" class="openMenu"/>
+				</div>
+				<!-- JSTREE STARTS HERE -->
+				<?php
+					$contentFolder = ivMapperFactory::getMapper('folder')->find(ROOT_DIR . ivPath::canonizeRelative($conf->get('/config/imagevue/settings/contentfolder')));
+					$iterator = new ivRecursiveFolderIterator($contentFolder);
+					$filter1 = new ivRecursiveFolderIteratorVisible($iterator);
+					$filter2 = new ivRecursiveFolderIteratorPassword($filter1, (isset($_SESSION['imagevue']['password']) ? (string) $_SESSION['imagevue']['password'] : null));
+					$folderTreeIterator = new RecursiveIteratorIterator($filter2, RecursiveIteratorIterator::SELF_FIRST);
+					echo $this->partial('tree', array('folderTreeIterator' => $folderTreeIterator));
+				?>
+				<!-- JSTREE ENDS HERE -->
+			</div>
+
+			<div class="crumbs">
+				<?php $brCrumbs = ivPool::get('breadCrumbs'); ?>
+				<?php foreach ($brCrumbs->get() as $crumb): ?>
+					<a class="<?php echo $crumb->className; ?>" href="<?php echo $crumb->url; ?>"><?php echo strip_tags($crumb->title); ?></a><?php echo $crumb->suffix; ?><?php echo ($brCrumbs->tail() === $crumb->title ? '' : '&raquo;'); ?>
+				<?php endforeach; ?>
+			</div>
+
+			<div class="clrFlt"></div>
+		</div>
+		<!-- /subheader -->
+
+		<div id="content">
+			<?php echo $this->getPageContent(); ?>
+		</div>
+		<div id="counters">
+			<?php echo $counters; ?>
+		</div>
+	</div>
+	</body>
+</html>

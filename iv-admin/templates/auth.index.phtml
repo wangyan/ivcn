@@ -1,0 +1,63 @@
+<?php $statsHost = 'http://stats.imagevuex.com'; ?>
+
+<div class="bodyContent narrow">
+	<h1>安装授权</h1>
+	<div id="result" class="pageMessenger">
+
+	</div>
+
+	<?php if (!in_array('noteAuthorization', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteAuthorization" href="#" class="close">&times;</a>
+			如果你还没有 Imagevue 订单ID，那么你需要购买安装许可证。
+			<a title="关于 Imagevue 授权" class="iv-ext" target="_blank" href="http://imagevuex.com/documentation/authorization/">关于 Imagevue 授权</a>
+		</div>
+	<?php endif; ?>
+
+	<form id="authForm" action="<?php echo $statsHost; ?>/auth/index.php" method="post" onsubmit="Stats.check($(this).serialize()); return false;">
+		<table class="nice">
+			<thead>
+				<tr>
+					<th colspan="2">
+						请填写许可证信息，获取安装授权。
+						<a class="iv-help" target="_blank" title="什么是安装授权？" href="http://imagevuex.com/documentation/authorization/"></a>
+					</th>
+				</tr>
+			</thead>
+			<tr>
+				<td width="1%">域名</td>
+				<td><input type="text" class="text" name="auth[host]" value="<?php echo $_SERVER['HTTP_HOST'] ?>" /></td>
+			</tr>
+			<tr>
+				<td width="10%">订单 ID</td>
+				<td><input type="text" class="text" name="auth[order_id]" /></td>
+			</tr>
+			<tr>
+				<td>电子邮件</td>
+				<td><input type="text" class="text" name="auth[email]" /></td>
+			</tr>
+			<tr class="controls left">
+				<td></td>
+				<td>
+					<input type="submit" class="button buttonSave" value="提交"/>
+				</td>
+			</tr>
+		</table>
+	</form>
+</div>
+
+<script type="text/javascript" src="<?php echo $statsHost; ?>/auth/async.php"></script>
+<script type="text/javascript">
+  Stats.scriptLoaded = function () {
+    if (Stats.response) {
+      if (Stats.response.status) {
+        jQuery.ajax({url: '?c=auth&a=done'});
+      }
+      $('#result').html('');
+      $.each(Stats.response, function (name, value) {
+        if ('status' != name)
+          $('#result')[0].innerHTML += '<div class="' + name + '">' + value + '</div>';
+      });
+    }
+  }
+</script>

@@ -1,0 +1,161 @@
+<html lang="en">
+<head>
+<?php
+$conf = ivPool::get('conf');
+$keywords = $conf->get('/config/imagevue/seo/keywords');
+$description = $conf->get('/config/imagevue/seo/description');
+$counters = $conf->get('/config/imagevue/seo/counters');
+$sharing = $conf->get('/config/imagevue/misc/sharing/enabled')
+?>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="keywords" content="<?php echo $keywords; ?>" />
+	<meta name="description" content="<?php echo $description; ?>" />
+	<title><?php echo $this->siteTitle; ?></title>
+	<?php if (ivAcl::isAdmin()): ?><link href="<?php echo IV_PATH; ?>assets/css/imagevue.adminbar.css" rel="stylesheet" type="text/css" /><?php endif ?>
+	<link href="<?php echo IV_PATH; ?>assets/css/imagevue.flash.css" rel="stylesheet" type="text/css" />
+	<meta http-equiv="Content-Type" content="text/html" />
+	<script type="text/javascript" src="<?php echo IV_PATH; ?>assets/js/swfobject.js"></script>
+	<script type="text/javascript" src="<?php echo IV_PATH; ?>assets/js/swfaddress.js"></script>
+	<!--[if !IE]>-->
+	<script type="text/javascript" src="<?php echo IV_PATH; ?>assets/js/swfmacmousewheel.js"></script>
+	<!--<![endif]-->
+	<?php if ($sharing): ?>
+		<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js"></script>
+		<script type="text/javascript">
+			var addthis_config;
+			var addthis_share;
+			function showAddThis(url, title, color, back_color, cobrand)
+			{
+				addthis_share = {
+				templates: {twitter: '{{title}} - {{url}}'}
+				}
+			
+				addthis_config = { 
+				ui_header_color: color,
+				ui_header_background: back_color,
+				ui_cobrand: cobrand,
+				services_exclude: 'print',
+				ui_use_css: false
+				};
+			
+		    	addthis_open(document.body, "more", url, title);
+			}
+		</script>
+	<?php endif ?>
+	
+	<style type="text/css">
+		body { 	background-color: #<?php echo $this->bkGrColor; ?>; }
+	</style>
+</head>
+<body>
+	<table>
+		<!-- #forAdmin -->	
+		<?php if (ivAcl::isAdmin()): ?>
+			<tr>
+				<td>
+					<div id="forAdmin">
+						<div class="right"><?php echo htmlspecialchars(ivAuth::getCurrentUserLogin()) ?>
+							<a href="#" title="隐藏管理工具栏" onclick="document.getElementById('forAdmin').style.display = 'none';return false;"><strong>&times; 隐藏</strong></a>
+						</div>
+						<a id="editPageLink" href="<?php echo $conf->get('/config/imagevue/settings/adminfolder') ?>?path=<?php echo $this->placeholder->get('currentPath'); ?>" title="相册管理/文件管理">编辑此页面 &rsaquo;</a> 
+						<a id="htmlVersionLink" href="?<?php echo $this->placeholder->get('currentPath'); ?>" title="浏览 HTML 版相册">HTML 版本 &rsaquo;</a> 
+						<a id="makeThumbsLink" href="<?php echo $conf->get('/config/imagevue/settings/adminfolder') ?>?a=publish&amp;path=<?php echo $this->placeholder->get('currentPath'); ?>" title="重建此目录/图片的缩略图">重建缩略图 &rsaquo;</a>
+						<a href="<?php echo $conf->get('/config/imagevue/settings/adminfolder') ?>?c=config" title="更改 <?php echo $this->siteTitle; ?> 设置">设置 &rsaquo;</a> 
+						<!-- <a href="?a=index">API 参考 &raquo;</a>  -->
+					</div>
+					
+					<script type="text/javascript">
+					//<![CDATA[
+					SWFAddress.addEventListener(SWFAddressEvent.CHANGE, function(event) {
+						var path = SWFAddress.getPath().substr(1);
+						document.getElementById('editPageLink').href = '<?php echo $conf->get('/config/imagevue/settings/adminfolder') ?>?path=' + path;
+						document.getElementById('htmlVersionLink').href = '?' + path;
+						var makeThumbsLink = document.getElementById('makeThumbsLink');
+						if (/[^\/]+\.[^\/]+\/$/.test(path)) {
+							makeThumbsLink.style.display = 'none';
+						} else {
+							makeThumbsLink.style.display = '';
+							makeThumbsLink.href = '<?php echo $conf->get('/config/imagevue/settings/adminfolder') ?>?a=publish&path=' + path;
+						}
+					});
+					// ]]>
+					</script>
+				</td>
+			</tr>
+		<?php endif; ?>
+		<!-- /forAdmin -->
+		<tr>
+			<td class="imagevue">
+				<div class="imagevue_wrap">
+					<table  height="100%">
+						<tr>
+							<td class="imagevue">
+								<div class="imagevue">
+									<div id="imagevue">
+										<div id="na">
+											<div id="top">
+											<?php if ($this->firstImage): ?>
+												<img src="<?php echo htmlspecialchars($this->firstImage->thumbnail); ?>" alt="<?php echo htmlspecialchars($this->firstImage->title) ?>" style="float: left;" />
+											<?php endif; ?>
+											<div id="text"><h1><a href="<?php echo $_SERVER['REQUEST_URI']; ?>"><?php echo $this->siteTitle; ?></a></h1><p><?php echo $description; ?></p></div>
+											</div>
+											<div id="bottom" style="clear: both;">
+											<strong class="mytitle">Oops! - This page requires Flash Player and Javascript</strong>
+											<br/>
+											Please make sure you have the latest <a href="http://get.adobe.com/flashplayer/" target="_blank"  rel="nofollow">Flash Player</a> installed and Javascript is enabled in your browser.<br/>
+											&rsaquo; <a href="/">View Flash gallery</a><br/>
+											<br/>
+											<?php if ($this->enabledHTML): ?>Optionally, you can view the HTML Gallery instead:<br/>
+												&rsaquo; <a href="?p=html">HTML Gallery</a><br/>
+												&rsaquo; <a href="?p=sitemap">HTML Sitemap</a><br/>
+												<br/>
+											<?php endif; ?> Gallery Software by Imagevuex.com:<br/>
+											&rsaquo; <a  class="iv-ext" target="_blank" href="http://imagevuex.com" title="Flash online photo gallery and slideshow">Flash web image gallery photo album and slideshow software</a>
+											</div>
+										</div>
+									</div>
+								
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="counters">
+									<?php echo $counters; ?>	
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<script>
+				params={allowScriptAccess: 'always', allowFullScreen: true, bgcolor: '#<?php echo $this->bkGrColor; ?>'};
+				</script>
+				<!--[if IE]>
+				<script>
+				params={allowScriptAccess: 'always', allowFullScreen: true, bgcolor: '#<?php echo $this->bkGrColor; ?>', wmode: 'opaque'};
+				</script>
+				<![endif]-->
+				<script type="text/javascript">
+				//<![CDATA[
+				<?php if (count($this->vars)): ?>
+				var flashVars = {
+					foreground_color: '<?php echo $this->frGrColor; ?>',
+					background_color: '<?php echo $this->bkGrColor; ?>'
+				};
+				<?php foreach ($this->vars as $key => $value): ?>
+				flashVars.<?php echo $key; ?> = '<?php echo htmlspecialchars($value); ?>';
+				<?php endforeach; ?>
+				<?php endif; ?>	
+				var attributes = {
+					id: 'imagevue',
+					name: 'imagevue'
+				}
+				swfobject.embedSWF("<?php echo IV_PATH; ?>imagevue2.swf", "imagevue", "100%", "100%", "8.0.0", "<?php echo IV_PATH; ?>expressInstall.swf", flashVars, params, attributes);
+				swfmacmousewheel.registerObject(attributes.id);
+				// ]]>
+				</script>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<div class="bodySidebar folderParams">
+	<div class="folderTitle"><?php echo $this->file->getTitle(); ?></div>
+
+	<p class="folderTags">
+		<span><?php echo formatDate($this->file->date); ?></span>
+		<?php if (is_a($this->file, 'ivFileImage')):?>
+			<span><?php echo $this->file->width; ?>&times;<?php echo $this->file->height; ?></span>
+		<?php endif;?>
+		<span><?php echo formatFilesize($this->file->size); ?></span>
+	</p>
+
+	<div class="folderPreview" id="folderPreviewContainer">
+		<div class="thumb">
+			<img src="../<?php echo $this->file->thumbnail; ?>?<?php echo $this->file->getThumbnailMTime(); ?>" alt="" <?php echo (is_a($this->file, 'ivFileImage') ? 'id="buttonThumbArea2"' : ''); ?>/>
+		</div>
+	</div>
+
+	<form method="post" action="">
+		<div><input type="hidden" name="path" value="<?php echo $this->file->getPrimary(); ?>" /></div>
+		<div class="row">
+			<label>标题</label>
+			<input type="text"  class="text" name="newdata[title]" value="<?php echo htmlspecialchars($this->file->title); ?>" />
+		</div>
+		<?php if (is_a($this->file, 'ivFileMP3')): ?>
+			<div class="row">
+				<label>艺术家</label>
+				<input type="text"  class="text" name="newdata[artist]" value="<?php echo htmlspecialchars($this->file->artist); ?>" />
+			</div>
+		<?php endif; ?>
+		<div class="row">
+			<label>描述</label>
+			<div class="textarea"><textarea cols="1" rows="5" name="newdata[description]"><?php echo $this->file->description; ?></textarea></div>
+		</div>
+		<?php foreach ($this->file->getUserAttributeNames() as $name): ?>
+			<div class="row">
+				<label><?php echo ucfirst($name); ?></label>
+				<input type="text"  class="text" name="newdata[<?php echo $name; ?>]" value="<?php echo htmlspecialchars($this->file->$name); ?>" />
+			</div>
+		<?php endforeach; ?>
+		<div class="controls left">
+			<input type="submit" class="buttonSave" value="保存" name="save" />
+			<label>
+				<input type="checkbox" name="editNext" id="editNextCheckbox" onclick="return false;" />
+				继续编辑下一个文件
+			</label>
+		</div>
+	</form>
+</div>
+
+<div class="bodyContent folderThumbs">
+	<div class="contentBar">
+		<div class="controls right">
+			<form method="post" action="">
+				<input type="hidden" name="copy" value="0" />
+				<span>移动至：</span>
+				<span>
+					<select onchange="this.form.action='index.php?c=file&amp;a=move&amp;path=<?php echo $this->path?>&amp;target=' + this.value; this.form.submit();">
+					<?php foreach ($this->folderTreeIterator as $folder):?>
+						<option value="<?php echo $folder->getPrimary(); ?>" <?php echo (ivFilepath::directory($this->path) == $folder->getPrimary() ? 'selected="selected"' : ''); ?>><?php echo str_repeat('--', $this->folderTreeIterator->getDepth()); ?> <?php echo smartStripTagsSubstr($folder->getTitle()); ?>&nbsp;&nbsp;</option>
+					<?php endforeach; ?>
+					</select>
+				</span>
+				<label>
+					<input type="checkbox" class="checkbox" name="copy" value="1" /> 复制
+				</label>
+			</form><a class="buttonDelete" href="index.php?c=file&amp;a=delete&amp;path=<?php echo urlencode($this->path); ?>" onclick="return confirm('你确定要删除文件 <?php echo ($this->file->name); ?>？');">删除</a>
+		</div>
+		<div class="controls left">
+		<a href="?c=file&amp;path=<?php echo urlencode($this->file->Parent->getPrimary())?>">&laquo; 返回</a>
+		<a title="Previous image" href="?c=file&amp;path=<?php echo urlencode($this->prevFile->getPrimary()); ?>">&nbsp;&laquo;&nbsp;</a>
+		<span><?php echo $this->current; ?>/<?php echo $this->count; ?></span>
+		<a title="Next image" href="?c=file&amp;path=<?php echo urlencode($this->nextFile->getPrimary()); ?>">&nbsp;&raquo;&nbsp;</a>
+		<?php if (is_a($this->file, 'ivFileImage')):?>
+			<a class="button buttonPreview" href="?c=index&amp;a=setPreview&amp;path=<?php echo urlencode($this->file->Parent->getPrimary()); ?>&amp;id=<?php echo encodeFilenameBase64($this->file->name); ?>" title="设置为文件夹预览图片">&nbsp;</a>
+		<?php endif; ?>
+
+		<?php if (is_a($this->file, 'ivFileImage')):?>
+			<a href="#" class="button buttonThumb" id="buttonThumbArea" title="Edit Thumbnail">&nbsp;</a>
+		<?php endif ?>
+
+		<?php if (GD_INSTALLED & is_a($this->file, 'ivFileImage')): ?>
+			<a class="button buttonCW" title="Rotate image ClockWise" href="index.php?c=file&amp;a=rotate&amp;dir=<?php echo ivImage::IMAGE_ROTATE_CW ?>&amp;path=<?php echo urlencode($this->path); ?>">&nbsp;</a>
+			<a class="button buttonCCW" title="Rotate image CounterClockWise" href="index.php?c=file&amp;a=rotate&amp;dir=<?php echo ivImage::IMAGE_ROTATE_CCW ?>&amp;path=<?php echo urlencode($this->path); ?>">&nbsp;</a>
+		<?php endif; ?>
+			</div>
+	</div>
+
+	<?php if (!in_array('noteManage', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteManage" class="close" href="#">&times;</a>
+			<a class="iv-ext" title="About Imagevue Manage Page" href="http://imagevuex.com/documentation/manage-page/" target="_blank">Imagevue file management</a>
+		</div>
+	<?php endif; ?>
+
+	<div class="image">
+		<?php if (is_a($this->file, 'ivFileImage')): ?>
+			<img alt="<?php echo $this->file->getTitle(); ?>" src="../<?php echo $this->file->getPrimary(); ?>?<?php echo $this->file->date ?>" />
+		<?php else: ?>
+			<img alt="<?php echo $this->file->getTitle(); ?>" src="../<?php echo $this->file->thumbnail; ?>" />
+		<?php endif; ?>
+	</div>
+	<table class="holder">
+		<tr>
+			<td>
+				<table class="nice small">
+					<?php foreach ($this->file->getPropertyNames() as $name): ?>
+						<tr>
+							<?php if ('date' == $name): ?>
+								<td><b><?php echo ucfirst($name); ?></b>:</td>
+								<td> <?php echo formatDate($this->file->$name); ?></td>
+							<?php elseif ('size' == $name): ?>
+								<td><b><?php echo ucfirst($name); ?></b>:</td>
+								<td><?php echo formatFilesize($this->file->$name); ?></td>
+							<?php else: ?>
+								<td><b><?php echo ucfirst($name); ?></b>:</td>
+								<td><?php echo $this->file->$name; ?></td>
+							<?php endif; ?>
+						</tr>
+					<?php endforeach; ?>
+				</table>
+			</td>
+			<?php $metaData = $this->file->getMetaData(); ?>
+			<?php if (isset($metaData) && !empty($metaData)): ?>
+				<td>
+					<table class="nice small">
+						<?php foreach ($metaData as $key => $value): ?>
+							<tr>
+								<td><b><?php echo $key; ?>:</b></td>
+								<td><?php echo is_array($value) ? implode("\n", $value) : nl2br($value); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</table>
+				</td>
+			<?php endif; ?>
+		</tr>
+	</table>
+</div>
+
+<script type="text/javascript">
+// <![CDATA[
+	(function ($) {
+		$(document).ready(function() {
+		    $("#buttonThumbArea, #buttonThumbArea2").colorbox({
+				title: ' ',
+				width:'800px',
+				height:'600px',
+				href: '?c=file&a=thumbarea&path=<?php echo urlencode($this->file->getPrimary()); ?>',
+				iframe: true
+			});
+		});
+	})(jQuery);
+// ]]>
+</script>

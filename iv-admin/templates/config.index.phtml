@@ -1,0 +1,34 @@
+<div class="bodyContent single">
+	<h1>相册设置</h1>
+
+	<?php if (!in_array('noteSettings', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteSettings" href="#" class="close">&times;</a>
+			该设置页面允许你对相册进行自定义设置。
+			<a title="About Imagevue Settings" href="#image" target="_blank" class="iv-ext">设置页面</a>
+		</div>
+	<?php endif; ?>
+
+	<form method="post" action="">
+
+		<div class="controls left">
+			<input type="submit" class="button buttonSave" name="save" value="保存" />
+			<input type="button" class="button buttonExpand" value="全部展开" onclick="$('.ivconf').each(function () {$(this).addClass('open').next().show();});" />
+			<input type="button" class="button buttonCollapse" value="全部折叠" onclick="$('.ivconf').each(function () {$(this).removeClass('open').next().hide();});" />
+		</div>
+
+		<div class="contentMenu" id="configTabHeaders">
+			<?php foreach ($this->sections as $name => $flatSection): ?>
+				<a href="#<?php echo $name; ?>" class="tabHeader"><?php echo ucfirst($name); ?></a>
+			<?php endforeach; ?>
+		</div>
+		<?php echo $this->partial('formtree', array('sections' => $this->sections, 'openedPanels' => $this->openedPanels)); ?>
+	</div>
+
+		<div class="controls left">
+			<input type="submit" class="button buttonSave" name="save" value="保存" />
+			<input type="button" class="button buttonExpand" value="全部展开" onclick="$('.ivconf').each(function () {$(this).addClass('open').next().show();});" />
+			<input type="button" class="button buttonCollapse" value="全部折叠" onclick="$('.ivconf').each(function () {$(this).removeClass('open').next().hide();});" />
+		</div>
+	</form>
+</div>

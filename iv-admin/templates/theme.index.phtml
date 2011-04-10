@@ -1,0 +1,119 @@
+<div  class="bodyContent narrow themesIndex">
+    <?php $i = 0; $note = true;?>
+	<?php foreach ($this->themes as $theme): ?>
+		<?php if (!in_array($theme, $this->defaultThemes)): ?>
+			<?php $note = false; ?>
+		<?php endif ?>
+	<?php endforeach; ?>
+	<h1>主题管理</h1>
+
+	<?php if ($note): ?>
+
+		<?php if (!in_array('noteThemesUser', ivPool::get('notes'))): ?>
+			<div class="note">
+				<a id="noteThemesUser" href="#" class="close">&times;</a>
+				<strong>提示:</strong> 您不能编辑原始主题。 <b>新建</b> 基于一个已经存在的主题。
+				<a  title="关于 Imagevue 主题"  class="iv-ext" target="_blank" href="http://imagevuex.com/documentation/edit-themes/">创建和编辑主题</a>
+			</div>
+		<?php endif; ?>
+
+	<?php else: ?>
+
+		<?php if (!in_array('noteThemes', ivPool::get('notes'))): ?>
+			<div class="note">
+				<a id="noteThemes" href="#" class="close">&times;</a>
+				您可以更改相册主题的视觉样式。
+				<a title="关于 Imagevue 主题" class="iv-ext" target="_blank" href="http://imagevuex.com/documentation/edit-themes/">创建和编辑主题</a>
+			</div>
+
+		<?php endif; ?>
+
+		<table class="nice">
+			<thead>
+				<tr>
+					<th width="200" class="text captions">使用主题</th>
+					<th width="50%"></th>
+					<th width="50"></th>
+					<th width="200"></th>
+				</tr>
+			</thead>
+
+
+			<?php foreach ($this->themes as $theme): ?>
+				<?php if (!in_array($theme, $this->defaultThemes)): ?>
+				<?php $i++; ?>
+				<tr class="<?php echo ($i % 2 ? 'odd' : ''); ?> <?php echo ($this->theme == $theme ? 'current' : ''); ?>">
+					<td>
+							<h2><a title="编辑 <?php echo $theme; ?> 主题" href="index.php?c=theme&amp;a=editconfig&amp;name=<?php echo $theme; ?>"><?php echo ucfirst($theme); ?></a></h2>
+					</td>
+					<td>
+							<a class="button buttonEdit" title="编辑 <?php echo $theme; ?> 主题" href="index.php?c=theme&amp;a=editconfig&amp;name=<?php echo $theme; ?>" <?php echo (in_array($theme, $this->defaultThemes) ? 'style="visibility: hidden;"' : '') ?>>编辑</a>
+							<a class="button buttonDelete" title="删除 <?php echo $theme; ?> 主题" href="index.php?c=theme&amp;a=delete&amp;name=<?php echo $theme; ?>" onclick="return confirm('您确认要删除 \'<?php echo $theme; ?>\' 主题吗？');"  <?php echo (in_array($theme, $this->defaultThemes) ? 'style="visibility: hidden;"' : '') ?>>删除</a>
+					</td>
+					<td>
+						<?php if ($this->theme == $theme): ?>
+							<img src="assets/images/icon_checked.gif" style="vertical-align: -3px"/> 使用
+						<?php else: ?>
+							<a  class="button buttonCheckbox" title="使用 <?php echo $theme; ?> 主题" href="index.php?c=theme&amp;a=use&amp;name=<?php echo $theme; ?>">使用</a>
+						<?php endif; ?>
+
+					</td>
+					<td>
+
+						<a class="button buttonCopy" title="基于 <?php echo $theme; ?> 创建新主题" href="#" onclick="var themeName = window.prompt('请输入新的主题名称'); if (themeName) {location.href = 'index.php?c=theme&amp;a=copy&amp;name=<?php echo $theme; ?>&amp;new=' + themeName;} return false;">新建</a>
+						<a class="button buttonView" title="预览 <?php echo $theme; ?> 主题" href="../index.php?c=gallery&amp;theme=<?php echo $theme; ?>" target="_blank" >预览</a>
+
+					</td>
+
+				</tr>
+				<?php endif ?>
+
+			<?php endforeach; ?>
+		</table>
+	<?php endif ?>
+
+	<table class="nice">
+			<thead>
+				<tr>
+					<th width="200" class="text captions">主题</th>
+					<th width="50%"></th>
+					<th width="50"></th>
+					<th width="200"></th>
+				</tr>
+			</thead>
+
+
+
+			<?php foreach ($this->themes as $theme): ?>
+				<?php if (in_array($theme, $this->defaultThemes)): ?>
+				<?php $i++; ?>
+
+				<tr class="<?php echo ($i % 2 ? 'odd' : ''); ?> <?php echo ($this->theme == $theme ? 'current' : ''); ?>">
+					<td >
+
+
+							<h2><?php echo ucfirst($theme); ?></h2>
+					</td>
+					<td>
+							<a class="image" title="预览 <?php echo $theme; ?> 主题" href="../index.php?c=gallery&amp;theme=<?php echo $theme; ?>" target="_blank" ><img  src="<?php echo IV_PATH ?>themes/<?php echo $theme?>/thumb.jpg" alt="<?php echo ucfirst($theme); ?> 主题预览"></a>
+
+					</td>
+					<td>
+						<?php if ($this->theme == $theme): ?>
+							<img src="assets/images/icon_checked.gif" style="vertical-align: -3px"/> 使用
+						<?php else: ?>
+							<a  class="button buttonCheckbox" title="使用 <?php echo $theme; ?> 主题" href="index.php?c=theme&amp;a=use&amp;name=<?php echo $theme; ?>">使用</a>
+						<?php endif; ?>
+					</td>
+					<td>
+
+						<a class="button buttonCopy" title="基于 <?php echo $theme; ?> 创建新主题" href="#" onclick="var themeName = window.prompt('请输入新的主题名称'); if (themeName) {location.href = 'index.php?c=theme&amp;a=copy&amp;name=<?php echo $theme; ?>&amp;new=' + themeName;} return false;">新建</a>
+						<a class="button buttonView" title="预览 <?php echo $theme; ?> 主题" href="../index.php?c=gallery&amp;theme=<?php echo $theme; ?>" target="_blank" >预览</a>
+
+					</td>
+
+				</tr>
+				<?php endif ?>
+			<?php endforeach; ?>
+		</table>
+</div>

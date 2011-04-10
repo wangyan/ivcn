@@ -1,0 +1,52 @@
+<div class="bodyContent narrow">
+	<h1>Imagevue X2.6.4</h1>
+
+	<?php if (!in_array('noteDiag', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteDiag" href="#" class="close">&times;</a>
+			如果相册未能够正常，此页面可帮助您诊断文件系统。
+		</div>
+	<?php endif; ?>
+
+	<div class="contentMenu">
+		<a href="index.php?c=diag" class="selected">文件系统</a>
+		<a href="index.php?c=diag&amp;a=errors">PHP 检查</a>
+		<a href="index.php?c=diag&amp;a=apachemod#error">Apache 模块检查</a>
+		<a href="index.php?c=diag&amp;a=phpinfo">PHP 信息</a>
+	</div>
+
+	<table class="nice">
+		<thead>
+			<tr>
+			<th width="100%">文件/文件夹</th>
+			<th>读取</th>
+			<th>写入</th>
+			<th>执行</th>
+		</tr>
+		</thead>
+		<?php foreach ($this->iterator as $item): ?>
+			<tr>
+				<td>
+					<span style="margin-left: <?php echo (23 * $this->iterator->getDepth())?>px;">
+						<img src="assets/dtree/images/<?php echo ($item->isDir() ? 'folder' : 'node'); ?>.gif" alt="" />
+						<?php echo $item->getFilename(); ?>
+					</span>
+				</td>
+				<td align="center">
+					<img src="assets/images/<?php echo $item->isReadable() ? 'icon_ok' : 'icon_error'; ?>.gif" alt="" />
+				</td>
+				<td align="center">
+					<img src="assets/images/<?php echo $item->isWritable() ? 'icon_ok' : 'icon_error'; ?>.gif" alt="" />
+				</td>
+				<td align="center">
+					<?php if ($item->isDir()): ?>
+						<img src="assets/images/<?php echo ($item->isExecutable() ? 'icon_ok' : 'icon_error'); ?>.gif" alt="" />
+					<?php else: ?>
+						&nbsp;
+					<?php endif; ?>
+				</td>
+			</tr>
+		<?php endforeach; ?>
+	</table>
+
+</div>

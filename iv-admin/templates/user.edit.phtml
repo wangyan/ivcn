@@ -1,0 +1,63 @@
+<div class="bodyContent narrow">
+	<h1><?php echo (isset($this->user) ? '编辑 '.ucfirst($this->user->login) : '添加用户'); ?></h1>
+
+	<?php if (!in_array('noteUsers', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteUsers" href="#" class="close">&times;</a>
+			你可以添加多个拥有 Imagevue 控制面板权限的用户。
+			<a title="Imagevue 用户管理" href="http://imagevuex.com/documentation/settings-page/" class="iv-ext" target="_blank">用户页面</a>
+		</div>
+	<?php endif; ?>
+
+	<form method="post" action="">
+		<table  class="nice">
+			<tr>
+				<td class="text right">用户名</td>
+				<td class="text">
+					<input name="login" type="text" class="text" value="<?php echo (isset($this->user) ? $this->user->login : ''); ?>" />
+				</td>
+			</tr>
+			<tr class="odd">
+				<td class="text right">密码</td>
+				<td class="text">
+					<input type="password"  class="text" name="user[password]" value="" />
+				</td>
+			</tr>
+			<tr>
+				<td class="text right">重复密码</td>
+				<td class="text">
+					<input type="password" name="password_confirm" class="text" value="" />
+				</td>
+			</tr>
+			<tr class="odd">
+				<td class="text right">权限</td>
+				<td class="text">
+					<input name="user[access]" id="hidden_selector" type="hidden" value="<?php echo (isset($this->user) ? $this->user->access : ''); ?>" />
+					<label>
+						<input type="radio" value="Admin" onclick="$('#path_selector').attr('disabled', true); $('#hidden_selector').val('*');" name="radio" <?php echo (isset($this->user) && ivAcl::isAdmin($this->user->login) ? 'checked="checked"' : ''); ?> />
+						管理员
+					</label>
+					<br />
+					<label>
+						<input type="radio" value="Admin" onclick="$('#path_selector').attr('disabled', false); $('#hidden_selector').val($('#path_selector').val());" name="radio" <?php echo (isset($this->user) && !ivAcl::isAdmin($this->user->login) ?'checked="checked"' : ''); ?>/>
+						受限用户
+					</label>
+					<br />
+					<select id="path_selector" style="margin: 5px 0px 5px 0px;" <?php echo (isset($this->user) && ivAcl::isAdmin($this->user->login) ? 'disabled="disabled"' : ''); ?> onchange="$('#hidden_selector').val($(this).val());">
+						<?php foreach ($this->folderTreeIterator as $folder): ?>
+							<option value="<?php echo htmlspecialchars($folder->getPrimary()) ?>" <?php echo (isset($this->user) && $folder->getPrimary() == $this->user->access ? 'selected="selected"' : '') ?>>
+								<?php echo str_repeat('--', $this->folderTreeIterator->getDepth()); ?>[<?php echo smartStripTagsSubstr($folder->getTitle()) ?>]
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td class="controls left">
+					<input type="submit" name="save" class="buttonSave" value="保存" />
+				</td>
+			</tr>
+		</table>
+	</form>
+</div>

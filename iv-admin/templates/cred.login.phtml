@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?php $siteTitle = ivPool::get('conf')->get('/config/imagevue/settings/sitetitle'); ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>控制面板 | <?php echo $siteTitle; ?></title>
+	<link href="assets/css/imagevue.admin.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+	<div class="page">
+
+		<div class="pageHeader">
+			<a href="index.php"><?php echo $siteTitle; ?></a>
+		</div>
+		<div class="pageMessenger">
+			<?php foreach (ivMessenger::get(ivMessenger::NOTICE) as $notice): ?>
+				<div class="message"><?php echo $notice; ?></div>
+			<?php endforeach; ?>
+			<?php if ($this->defaultUser): ?>
+				<div class="error">请使用 admin/admin 账号登录，并及时修改初始密码！</div>
+			<?php endif; ?>
+			<?php if ($this->defaultGuest): ?>
+				<div class="message">游客请使用 guest/guest 账号登录</div>
+			<?php endif; ?>
+			<?php if ($this->wrongPassword): ?>
+				<div class="error">登录名或密码错误</div>
+			<?php endif; ?>
+		</div>
+
+		<div class="layer layerLogin">
+			<div class="layerBody">
+				<div class="layerHeader">
+					登录
+				</div>
+				<?php if ($this->defaultUser): ?>
+					<form method="post" action="index.php?redirect=<?php echo urlencode('index.php?c=user'); ?>">
+					<?php else: ?>
+					<form method="post" action="">
+					<?php endif; ?>
+					<table class="nice">
+						<tr>
+							<td class="c1">用户名</td>
+							<td>
+								<input name="login" type="text" class="text" />
+							</td>
+						</tr>
+						<tr>
+							<td class="c1">密码</td>
+							<td>
+								<input type="password" name="password" class="text" />
+							</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>
+								<label>
+									<input type="checkbox" name="rememberme" checked="checked" /> &nbsp;
+									保持登录状态
+								</label>
+							</td>
+						</tr>
+						<tr class="controls left">
+							<td></td>
+							<td>
+								<input type="submit" class="button buttonSave" value="登录"/>
+							</td>
+						</tr>
+					</table>
+					</form>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

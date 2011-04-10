@@ -1,0 +1,117 @@
+<?php
+	$this->placeholder->set('currentPath', $this->file->getPrimary());
+	$this->placeholder->set('currentTitle', $this->file->getTitle());
+?>
+
+<div id="navigation">
+	<a href="?<?php echo urlencode($this->file->Parent->getPrimary()); ?>" title="返回缩略图区">&laquo;</a><a href="?<?php echo urlencode($this->prevFile->getPrimary()); ?>" title="上一张图片">&lsaquo;</a>
+	<span class="naviCount"><?php echo $this->current; ?>/<?php echo $this->count; ?></span>
+	<a href="?<?php echo urlencode($this->nextFile->getPrimary()); ?>" title="下一张图片">&rsaquo;</a>
+</div>
+
+<table align="center" id="image">
+	<tr>
+		<td>
+			<a href="?<?php echo urlencode($this->nextFile->getPrimary()); ?>" title="<?php echo $this->file->getTitle(); ?>">
+				<img src="<?php echo $this->file->getPrimary(); ?>" alt="<?php echo $this->file->getTitle(); ?>" id="myimage" width="<?php echo $this->file->width; ?>" height="<?php echo $this->file->height; ?>" />
+			</a>
+			<div id="imagetext">
+				<h1 class="title">
+						<?php echo $this->file->getTitle(); ?>
+				</h1>
+				<?php if (!empty($this->file->description)): ?>
+					<h2 class="description">
+						<?php echo $this->file->description; ?>
+					</h2>
+				<?php endif; ?>
+				<div class="imageAttributes">
+					<?php
+						$count = 0;
+						foreach ($this->file->getAttributeNames() as $name) {
+							if (!in_array($name, array('title', 'description', 'order')) && $this->file->$name) {
+								$count++;
+							}
+						}
+						foreach ($this->file->getUserAttributeNames() as $name) {
+							if ($this->file->$name) {
+								$count++;
+							}
+						}
+					?>
+					<?php if ($count): ?>
+						<table style="width: 100%">
+							<?php foreach ($this->file->getAttributeNames() as $name): ?>
+								<?php if (!in_array($name, array('title', 'description', 'order')) && $this->file->$name): ?>
+									<tr>
+										<td><?php echo ucfirst($name); ?></td>
+										<td><?php echo $this->file->$name; ?></td>
+									</tr>
+								<?php endif; ?>
+							<?php endforeach; ?>
+							<?php foreach ($this->file->getUserAttributeNames() as $name): ?>
+								<?php if ($this->file->$name): ?>
+									<tr>
+										<td><?php echo ucfirst($name); ?></td>
+										<td><?php echo $this->file->$name; ?></td>
+									</tr>
+								<?php endif; ?>
+							<?php endforeach; ?>
+						</table>
+					<?php endif; ?>
+				</div>
+				<div class="imageProperties">
+					<div class="filename"><?php echo $this->file->name; ?></div>
+					<div class="date"><?php echo formatDate($this->file->date); ?></div>
+					<div class="dimensions"><?php echo $this->file->width; ?> x <?php echo $this->file->height; ?></div>
+					<div class="filesize"><?php echo formatFilesize($this->file->size); ?></div>
+				</div>
+				<?php if (is_a($this->file, 'ivFileImage')): ?>
+					<?php $exifData = $this->file->getExifData(); ?>
+					<?php if (!empty($exifData)): ?>
+						<div class="exifData">
+							<div class="exif_heading">exif data</div>
+							<table>
+								<?php foreach ($exifData as $key => $value): ?>
+									<tr>
+										<td><?php echo $key; ?></td>
+										<td><?php echo $value; ?></td>
+									</tr>
+								<?php endforeach; ?>
+							</table>
+						</div>
+					<?php endif; ?>
+					<?php $iptcData = $this->file->getIptcData(); ?>
+					<?php if (!empty($iptcData)): ?>
+						<div class="exifData">
+							<div class="exif_heading">iptc data</div>
+							<table>
+								<?php foreach ($iptcData as $key => $value): ?>
+									<tr>
+										<td><?php echo $key; ?></td>
+										<td><?php echo is_array($value) ? implode("\n", $value) : $value; ?></td>
+									</tr>
+								<?php endforeach; ?>
+							</table>
+						</div>
+					<?php endif; ?>
+				<?php endif; ?>
+				<?php if (is_a($this->file, 'ivFileMP3')): ?>
+					<?php $id3Data = $this->file->getId3Data(); ?>
+					<?php if (!empty($id3Data)): ?>
+						<div class="exifData">
+							<div class="exif_heading">id3 data</div>
+							<table>
+								<?php foreach ($id3Data as $key => $value): ?>
+									<tr>
+										<td><?php echo $key; ?></td>
+										<td><?php echo $value; ?></td>
+									</tr>
+								<?php endforeach; ?>
+							</table>
+						</div>
+					<?php endif; ?>
+				<?php endif; ?>
+			</div>
+		</td>
+	</tr>
+</table>

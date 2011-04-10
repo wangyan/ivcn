@@ -1,0 +1,42 @@
+<div class="bodyContent single">
+	<div class="contentSubMenu">
+		<!-- <?php echo ucfirst($this->theme->getName()); ?> -->
+		<a title="编辑主题设置" href="index.php?c=theme&amp;a=editconfig&amp;name=<?php echo $this->theme->getName(); ?>">Settings</a>
+		<a title="编辑主题样式" class="selected" href="index.php?c=theme&amp;a=editcss&amp;name=<?php echo $this->theme->getName(); ?>">Stylesheet</a>
+		&nbsp; &nbsp;
+	</div>
+
+	<?php if (!in_array('noteThemes', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteThemes" href="#" class="close">&times;</a>
+			您可以更改相册主题的视觉样式。
+			<a title="Imagevue 文件管理" class="iv-ext" target="_blank" href="http://imagevuex.com/documentation/edit-themes/">创建和编辑主题</a>
+		</div>
+	<?php endif; ?>
+
+	<div class="controls right" style="white-space: nowrap">
+		<a  class="button buttonHide" title="主题预览" target="_blank" href="../index.php?c=gallery&amp;theme=<?php echo $this->theme->getName(); ?>">预览</a>
+
+		<form id="themeBgUploaderForm" style="display: inline" action="index.php?c=theme&amp;a=upload&amp;name=<?php echo $this->themeName; ?>" method="post" enctype="multipart/form-data">
+			<a id="themeBgUploaderButton" class="cabinet button buttonUpload">上传背景</a>
+		</form>
+	</div>
+
+	<form method="post" action="">
+
+		<div class="controls left">
+			<input  class="button buttonSave"type="submit" class="button" value="保存"/>
+		</div>
+
+		<div class="editStylesheet">
+			<div class="textarea">
+				<textarea  name="css" cols="100" rows="30" id="field"><?php echo $this->theme->getStyle(); ?></textarea>
+			</div>
+		</div>
+
+		<div class="controls left">
+			<input  class="button buttonSave"type="submit" class="button" value="保存"/>
+		</div>
+
+	</form>
+</div>

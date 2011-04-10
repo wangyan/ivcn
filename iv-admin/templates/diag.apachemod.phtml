@@ -1,0 +1,45 @@
+<div class="bodyContent narrow">
+
+	<h1>Apache 模块检查</h1>
+
+	<?php if (!in_array('noteDiag', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteDiag" href="#" class="close">&times;</a>
+			如果相册未能够正常，此页面可帮助您诊断 Apache 模块。
+		</div>
+	<?php endif; ?>
+
+	<div class="contentMenu">
+		<a href="index.php?c=diag">文件系统</a>
+		<a href="index.php?c=diag&amp;a=errors">PHP 检查</a>
+		<a class="selected" href="index.php?c=diag&amp;a=apachemod#error">Apache 模块检查</a>
+		<a href="index.php?c=diag&amp;a=phpinfo">PHP 信息</a>
+	</div>
+
+	<table class="nice">
+		<thead>
+			<tr>
+				<th width="100%">模块名称</th>
+				<th></th>
+			</tr>
+		</thead>
+		<?php foreach ($this->modules as $module): ?>
+			<tr>
+				<td><?php echo $module; ?></td>
+				<?php if (isset($this->badModules[$module])): ?>
+					<td align="center">
+						<a name="error"></a>
+						<img src="assets/images/icon_error.gif" alt="" />
+					</td>
+					<td><?php echo $this->badModules[$module] ?></td>
+				<?php else: ?>
+					<td align="center">
+						<img src="assets/images/icon_ok.gif" alt="" />
+					</td>
+					<td>&nbsp;</td>
+				<?php endif; ?>
+			</tr>
+		<?php endforeach; ?>
+	</table>
+
+</div>

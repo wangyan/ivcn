@@ -1,0 +1,49 @@
+<div class="bodyContent single">
+
+	<div class="contentSubMenu">
+		<!-- <?php echo ucfirst($this->themeName); ?> -->
+		<a title="编辑主题设置" class="selected" href="index.php?c=theme&amp;a=editconfig&amp;name=<?php echo $this->themeName; ?>">设置</a>
+		<a title="编辑主题样式" href="index.php?c=theme&amp;a=editcss&amp;name=<?php echo $this->themeName; ?>">样式</a>
+	</div>
+
+	<?php if (!in_array('noteThemes', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteThemes" href="#" class="close">&times;</a>
+			您可以更改相册主题的视觉样式。
+			<a title="关于 Imagevue 主题" class="iv-ext" target="_blank" href="http://imagevuex.com/documentation/edit-themes/">创建和编辑主题</a>
+		</div>
+	<?php endif; ?>
+
+	<div class="controls right" style="white-space: nowrap" >
+		<a class="button buttonHide" title="预览主题" target="_blank" href="../index.php?c=gallery&amp;theme=<?php echo $this->themeName; ?>">预览</a>
+
+		<form id="themeBgUploaderForm" style="display: inline" action="index.php?c=theme&amp;a=upload&amp;name=<?php echo $this->themeName; ?>" method="post" enctype="multipart/form-data">
+			<a id="themeBgUploaderButton" class="cabinet button buttonUpload">上传背景</a>
+		</form>
+	</div>
+
+	<form method="post" action="">
+
+		<div class="controls left">
+			<input class="button buttonSave" type="submit" name="save" value="保存" />
+			<input class="button buttonExpand" type="button" value="全部展开" onclick="$('.ivconf').each(function () {$(this).addClass('open').next().show();});" />
+			<input class="button buttonCollapse" type="button" value="全部折叠" onclick="$('.ivconf').each(function () {$(this).removeClass('open').next().hide();});" />
+
+		</div>
+
+		<div class="contentMenu" id="themeConfigTabHeaders">
+			<?php foreach ($this->sections as $name => $flatSection): ?>
+				<a href="#<?php echo $name; ?>" class="tabHeader"><?php echo ucfirst($name); ?></a>
+			<?php endforeach; ?>
+		</div>
+
+		<?php echo $this->partial('formtree', array('sections' => $this->sections, 'openedPanels' => $this->openedPanels)); ?>
+	</div>
+
+		<div class="controls left">
+			<input class="button buttonSave" type="submit" name="save" value="保存" />
+			<input class="button buttonExpand" type="button" value="全部展开" onclick="$('.ivconf').each(function () {$(this).addClass('open').next().show();});" />
+			<input class="button buttonCollapse" type="button" value="全部折叠" onclick="$('.ivconf').each(function () {$(this).removeClass('open').next().hide();});" />
+		</div>
+	</form>
+</div>

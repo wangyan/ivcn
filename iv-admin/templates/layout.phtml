@@ -1,0 +1,260 @@
+<?php
+$conf = ivPool::get('conf');
+$siteTitle = $conf->get('/config/imagevue/settings/sitetitle');
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+	<title>控制面板 - <?php echo $siteTitle; ?></title>
+	<link href="assets/css/imagevue.admin.css" rel="stylesheet" type="text/css" />
+	<link href="assets/dtree/css/dtree.css" rel="stylesheet" type="text/css" />
+	<link href="assets/colorpicker/css/colorpicker.css" rel="stylesheet" type="text/css" />
+	<link href="assets/colorbox/colorbox.css" rel="stylesheet" type="text/css" />
+	<link href="assets/imgareaselect/css/imgareaselect-animated.css" rel="stylesheet" type="text/css" />
+	<link href="http://feeds.feedburner.com/Imagevue" title="Imagevue Blog" type="application/rss+xml" rel="alternate">
+	<script type="text/javascript" src="assets/js/jquery.min.js"></script>
+	<script type="text/javascript" src="assets/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="assets/colorbox/jquery.colorbox-min.js"></script>
+	<script type="text/javascript" src="assets/js/jquery.c.js"></script>
+	<script type="text/javascript" src="assets/js/imagevue.admin.js"></script>
+	<script type="text/javascript" src="assets/dtree/js/dtree.js"></script>
+	<script type="text/javascript" src="assets/js/jquery.spinbox.js"></script>
+	<script type="text/javascript" src="assets/colorpicker/js/colorpicker.js"></script>
+	<script type="text/javascript" src="assets/js/swfupload.js"></script>
+	<script type="text/javascript" src="assets/js/imagevue.upload.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+		if (!Imagevue)
+			var Imagevue = {};
+
+		if (!Imagevue.Environment)
+			Imagevue.Environment = {};
+
+		jQuery.extend(Imagevue.Environment, {
+			uploaderType: '<?php echo $conf->get('/config/imagevue/settings/uploader/type'); ?>',
+			sessionName: '<?php echo session_name(); ?>',
+			sessionId: '<?php echo session_id(); ?>',
+			uploadMaxFilesize: <?php echo min(realFilesize(ini_get('post_max_size')), realFilesize(ini_get('upload_max_filesize'))); ?>,
+			allowedExtensions: ['<?php echo implode("','", $conf->get('/config/imagevue/settings/allowedext')) ?>'],
+			currentUrlencodedPath: '<?php echo urlencode($this->placeholder->get('path')); ?>'
+		});
+	// ]]>
+	</script>
+
+	<script type="text/javascript" src="assets/js/jquery.custom-file-input.js"></script>
+	<script type="text/javascript" src="assets/js/imagevue.tabs.js"></script>
+
+	<script type="text/javascript" src="assets/js/jquery.elastic.js"></script>
+
+	<script type="text/javascript" src="assets/imgareaselect/scripts/jquery.imgareaselect.pack.js"></script>
+
+	<script type="text/javascript" src="assets/tiny_mce/tiny_mce.js"></script>
+	<script type="text/javascript">
+	// <![CDATA[
+		tinyMCE.init({
+			mode : 'exact',
+			elements : 'pageContent',
+			width : "100%",
+			plugins : "ivcontactform,legacyoutput,autoresize",
+			forced_root_block: false,
+			entity_encoding : "raw",
+			theme : 'advanced',
+			skin : "o2k7",
+			skin_variant : "black",
+			theme_advanced_toolbar_location : "top",
+			theme_advanced_toolbar_align : "left",
+			theme_advanced_statusbar_location : "bottom",
+			theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,|,forecolor,|,bullist,numlist,|,undo,redo,|,link,unlink,image,ivcontactform,cleanup,|,sub,sup,|,charmap,|,code",
+			theme_advanced_buttons2 : "",
+			theme_advanced_buttons3 : "",
+			theme_advanced_resizing : true,
+			theme_advanced_resize_horizontal : false,
+			theme_advanced_resizing_min_height : 400,
+			gecko_spellcheck: true,
+			external_image_list_url : '<?php echo $_SERVER['PHP_SELF']; ?>?c=index&a=mceImageList&path=' + Imagevue.Environment.currentUrlencodedPath,
+			valid_elements : "*[*]",
+			convert_urls : false,
+			relative_urls : false,
+			<?php
+				$qPathArray = array_explode_trim('/', $_SERVER['PHP_SELF']);
+				array_pop($qPathArray);
+				array_pop($qPathArray);
+				$documentBaseUrl = (count($qPathArray) ? '/' : '') . implode('/', $qPathArray) . '/';
+			?>
+			document_base_url : "<?php echo $documentBaseUrl; ?>",
+			formats : {
+				alignleft : {selector : 'img', attributes : {align: 'left'}},
+				aligncenter : {selector : 'img', attributes : {align: 'center'}},
+				alignright : {selector : 'img', attributes : {align: 'right'}}
+			}
+		});
+	// ]]>
+	</script>
+</head>
+<body>
+	<div class="page">
+		<?php if (ivAcl::isAdmin()): ?>
+			<div class="pageWarnings">
+				<?php $userManager = ivPool::get('userManager'); ?>
+				<?php $admin = $userManager->getUser('admin'); ?>
+				<?php if ($admin): ?>
+					<?php if ('30274c47903bd1bac7633bbf09743149ebab805f' === $admin->passwordHash || 'd033e22ae348aeb5660fc2140aec35850c4da997' === $admin->passwordHash): ?>
+						<a title="Click here to change it" href="?c=user&amp;a=edit&amp;login=admin">You have default password for 'admin' user&nbsp;&nbsp;</a>
+					<?php endif; ?>
+				<?php endif; ?>
+				<?php if (!MBSTRING_INSTALLED): ?>
+					<a href="index.php?c=diag&amp;a=errors#mbstring" title="It seems that mbstring extension is not prorerly installed..."><img style="border: 0px;" src="assets/images/icon_notice.gif" alt="" /></a>
+				<?php endif; ?>
+				<?php if (!GD_INSTALLED): ?>
+					<a href="index.php?c=diag&amp;a=errors#gd" title="It seems that GD extension is not prorerly installed..."><img style="border: 0px;" src="assets/images/icon_notice.gif" alt="" /></a>
+				<?php endif; ?>
+				<?php if (!ICONV_INSTALLED): ?>
+					<a href="index.php?c=diag&amp;a=errors#iconv" title="It seems that your PHP is compiled without ICONV support..."><img style="border: 0px;" src="assets/images/icon_notice.gif" alt="" /></a>
+				<?php endif; ?>
+				<?php if (!EXIF_INSTALLED): ?>
+					<a href="index.php?c=diag&amp;a=errors#exif" title="It seems that your PHP is compiled without EXIF data support..."><img style="border: 0px;" src="assets/images/icon_notice.gif" alt="" /></a>
+				<?php endif; ?>
+				<?php if (!XML_INSTALLED): ?>
+					<a href="index.php?c=diag&amp;a=errors#xml" title="It seems that your PHP is compiled without XML support..."><img style="border: 0px;" src="assets/images/icon_error.gif" alt="" /></a>
+				<?php endif; ?>
+				<?php if (SAFE_MODE_ENABLED): ?>
+					<a href="index.php?c=diag&amp;a=errors#safemode" title="It seems that option 'safe_mode' enabled on your server..."><img style="border: 0px;" src="assets/images/icon_error.gif" alt="" /></a>
+				<?php endif; ?>
+				<?php if (OPEN_BASEDIR_ENABLED): ?>
+					<a href="index.php?c=diag&amp;a=errors#open_basedir" title="It seems that there is 'open_basedir' restriction in action..."><img style="border: 0px;" src="assets/images/icon_error.gif" alt="" /></a>
+				<?php endif; ?>
+				<?php if (SUHOSIN_INSTALLED): ?>
+					<a href="index.php?c=diag&amp;a=errors#suhosin" title="It seems that suhosin module installed on your server..."><img style="border: 0px;" src="assets/images/icon_notice.gif" alt="" /></a>
+				<?php endif; ?>
+			</div><!-- pageWarnings -->
+		<?php endif; ?>
+		<div class="pageHeader">
+			<?php if (!ivPool::get('conf')->get('/config/imagevue/settings/disableDashboard')): ?>
+				<a href="index.php?c=dashboard" <?php echo ('dashboard' == $this->moduleName ? 'class="selected" ' : ''); ?> title="Dashboard"><?php echo $siteTitle; ?></a>
+			<?php else: ?>
+				<a href="index.php"><?php echo $siteTitle; ?></a>
+			<?php endif; ?>
+		</div><!-- pageHeader -->
+
+		<?php foreach (ivErrors::get() as $error): ?>
+			<div class="phperror">
+				<?php echo "{$error['severity']}: {$error['message']} ({$error['filepath']}:{$error['line']})"; ?>
+			</div>
+		<?php endforeach; ?>
+
+		<div class="pageMessenger">
+			<?php foreach (ivMessenger::get(ivMessenger::ERROR) as $error): ?>
+				<div class="error"><?php echo $error; ?></div>
+			<?php endforeach; ?>
+			<?php foreach (ivMessenger::get(ivMessenger::WARNING) as $warning): ?>
+				<div class="warning"><?php echo $warning; ?></div>
+			<?php endforeach; ?>
+			<?php foreach (ivMessenger::get(ivMessenger::NOTICE) as $notice): ?>
+				<div class="message"><?php echo $notice; ?></div>
+			<?php endforeach; ?>
+			<div>
+				&nbsp;
+			</div>
+		</div><!-- pageMessenger -->
+
+
+
+		<div class="userMenu">
+			<a href="../#/<?php echo $this->placeholder->get('path'); ?>" title="浏览Flash相册">Flash相册</a>
+			<a href="../?/<?php echo $this->placeholder->get('path'); ?>" title="浏览HTML相册">HTML相册</a>
+			<a href="index.php?c=diag" <?php echo ('diag' == $this->moduleName ? 'class="selected" ' : ''); ?> title="系统运行环境诊断">环境诊断</a>
+			<a href="index.php?c=cred&amp;a=logout" title="注销登陆">注销登陆 &rsaquo;</a>
+		</div>
+
+		<div class="pageMenu">
+			<ul>
+				<li class="tree">
+				<div class="holder">
+					<a href="#" class="plus"><img src="assets/images/icon_plus.png" alt=""/></a>
+				</div>
+				<div class="hidden rc">
+					<?php
+						$contentFolder = ivMapperFactory::getMapper('folder')->find(ROOT_DIR . ivAcl::getAllowedPath());
+						$iterator = new ivRecursiveFolderIterator($contentFolder);
+						$folderTreeIterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
+						echo $this->partial('tree', array('folderTreeIterator' => $folderTreeIterator, 'path' => $this->placeholder->get('path')));
+					?>
+				</div>
+			</li>
+
+			<li>
+				<a href="index.php<?php echo (isset($_SESSION['imagevue']['lastManageLink']) ? $_SESSION['imagevue']['lastManageLink'] : ''); ?>" <?php echo ('index' == $this->moduleName || 'file' == $this->moduleName ? 'class="selected"' : ''); ?> title="相册管理">相册管理</a>
+			</li>
+			<?php if (ivAcl::isAdmin()): ?>
+				<li>
+					<a href="index.php?c=config" <?php echo ('config' == $this->moduleName ? 'class="selected" ' : ''); ?> title="Change Settings">相册设置</a>
+				</li>
+				<li>
+					<a href="index.php?c=theme" <?php echo ('theme' == $this->moduleName ? 'class="selected" ' : ''); ?> title="Themes, Edit CSS">主题管理</a>
+				</li>
+				<li>
+					<a href="index.php?c=user" <?php echo ('user' == $this->moduleName ? 'class="selected" ' : ''); ?> title="Manage Users">用户管理</a>
+				</li>
+				<li>
+					<a href="index.php?c=lang" <?php echo ('lang' == $this->moduleName ? 'class="selected" ' : ''); ?> title="Change Languages">语言项目</a>
+				</li>
+
+			<?php endif; ?>
+				<li><a href="index.php?c=publish" <?php echo ('publish' == $this->moduleName ? 'class="selected" ' : ''); ?> title="Create Thumbnails">缩略图</a></li>
+
+			<?php if (!$conf->findByXPath('/config/imagevue/settings/authorized') || !$conf->get('/config/imagevue/settings/authorized')): ?>
+				<li>
+					<a href="index.php?c=auth" <?php echo ('auth' == $this->moduleName ? 'class="selected" ' : ''); ?> title="Authorize Your Gallery">安装授权</a>
+				</li>
+			<?php endif; ?>
+
+		</ul>
+	</div>
+
+	<div class="pageBody">
+		<div class="bodyCrumbs">
+			<div class="controls right">
+				<?php echo $this->placeholder->get('controls'); ?>
+			</div>
+			<div class="crumbsContainer">
+				<?php $brCrumbs = ivPool::get('breadCrumbs'); ?>
+			<?php if ($brCrumbs->count()): ?>
+
+				<?php foreach ($brCrumbs->get() as $crumb): ?>
+					<?php if ($crumb->url) :?>
+						<a class="<?php echo $crumb->className; ?>" href="<?php echo $crumb->url; ?>"><?php echo strip_tags($crumb->title); ?> <span class="files"><?php echo $crumb->suffix; ?></span></a><?php echo ($brCrumbs->tail() === $crumb->title ? '' : '&nbsp;&raquo;&nbsp;'); ?>
+					<?php else : echo strip_tags($crumb->title); endif;?>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</div>
+		</div><!-- bodyCrumbs -->
+
+
+			<?php echo $this->getPageContent(); ?>
+	</div><!--pageBody-->
+
+
+
+
+	<div class="pageFooter">
+		&copy; <a  class="iv-ext" target="_blank" href="http://imagevuex.com">Imagevue</a>  X2.6.4
+		&nbsp;
+		&nbsp;
+		<a class="iv-ext blog" title="Subscribe to Imagevue Blog" href="http://imagevuex.com/blog">Blog</a>
+		&nbsp;
+		<a class="iv-ext facebook" title="Check our Facebook Page" href="http://www.facebook.com/imagevue">Facebook</a>
+		&nbsp;
+		<a class="iv-ext twitter" title="Follow Imagevue on Twitter" href="http://twitter.com/imagevue">Twitter</a>
+		&nbsp;
+		<a  class="iv-ext uservoice" target="_blank" href="http://imagevue.uservoice.com" onclick="UserVoice.Popin.show(); return false;" title="Our feedback forum">Feedback</a>
+		&nbsp;
+		<a class="iv-ext authorize" href="index.php?c=auth" title="Authorize Your Domain">Authorize</a>
+		&nbsp;
+		<a class="iv-ext dashboard" href="index.php?c=dashboard" title="Imagevue News">Dashboard</a>
+	</div>
+</div><!-- page -->
+
+</body>
+</html>

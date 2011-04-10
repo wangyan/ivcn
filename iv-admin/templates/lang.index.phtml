@@ -1,0 +1,55 @@
+<div class="bodyContent narrow">
+	<h1>
+		<?php echo ucfirst($this->lang); ?>
+	</h1>
+
+	<?php if (!in_array('noteLanguage', ivPool::get('notes'))): ?>
+		<div class="note">
+			<a id="noteLanguage" href="#" class="close">&times;</a>
+			语言项目应用于Flash相册的导航和控制界面。
+			<a title="Imagevue Languages Page" href="http://imagevuex.com/documentation/languages-page/" taget="_blank" class="iv-ext">语言页面</a>
+		</div>
+	<?php endif; ?>
+
+	<div>
+		<form method="post" action="">
+			<div class="controls left">
+				<input type="submit"  class="button buttonSave" name="Save" value="保存" />
+				<a class="button buttonCheckbox" href = "index.php?c=lang&amp;a=use&amp;name=<?php echo $this->lang; ?>">使用 <?php echo ucfirst($this->lang); ?></a>
+
+				<a href="#"  class="button buttonNew" onclick="var langName = window.prompt('请输入新语言项目名称'); if (langName) {location.href = 'index.php?c=lang&amp;name=' + langName;} return false;">创建新语言项目</a>
+				&nbsp;
+				编辑：
+				 <select onchange="location.href = 'index.php?c=lang&amp;name=' + this.value;">
+					<?php foreach ($this->langs as $lang): ?>
+						<option value="<?php echo $lang; ?>" <?php echo ($this->lang == $lang ? 'selected="selected"' : '')?>><?php echo ucfirst($lang); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+			<table class="nice tableLanguage">
+				<thead>
+					<tr>
+						<th>Language item</th>
+						<th><?php echo ucfirst($this->lang); ?></th>
+					</tr>
+				</thead>
+				<?php $id = 1; ?>
+				<?php foreach ($this->flatConfig as $itemInfo): ?>
+					<?php if (0 < $itemInfo['depth']): ?>
+						<tr>
+							<td><?php echo ucfirst($itemInfo['node']->getName()); ?></td>
+							<td><?php echo $itemInfo['node']->toFormElement("lang[{$itemInfo['path']}]", $id); ?></td>
+						</tr>
+					<?php endif; ?>
+					<?php $id++; ?>
+				<?php endforeach; ?>
+			</table>
+
+			<div class="controls left">
+				<input type="submit"  class="button buttonSave" name="Save" value="保存" />
+				<input type="button"  class="button buttonCheckbox" value="使用 <?php echo ucfirst($this->lang); ?>" onclick="location.href = 'index.php?c=lang&amp;a=use&amp;name=<?php echo $this->lang; ?>'; return false;" />
+			</div>
+
+		</form>
+	</div>
+</div>
